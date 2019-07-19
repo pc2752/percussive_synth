@@ -175,7 +175,7 @@ class PercSynth(Model):
 
         # self.final_loss = cgm_crossentropy(tf.reshape(self.output_placeholder, [config.batch_size, -1, 1]), tf.reshape(self.output, [config.batch_size, -1, 4]))
         # self.final_loss = tf.losses.mean_squared_error(self.output,self.output_placeholder )
-        self.final_loss = tf.reduce_sum(tf.abs(self.output_placeholder- self.output) * self.mask_placeholder)
+        self.final_loss = tf.reduce_sum(tf.abs(self.output_placeholder- self.output) * self.input_placeholder)
         # tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(labels= self.output_placeholder, logits = self.output)) 
         # tf.reduce_sum(tf.abs(self.input_placeholder- self.output))
 
@@ -320,7 +320,7 @@ class PercSynth(Model):
     def test_model(self):
         sess = tf.Session()
         self.load_model(sess, log_dir = config.log_dir)
-        val_generator = data_gen(mode = 'Val')
+        val_generator = data_gen()
         out_audios, out_envelopes, out_features, out_masks = next(val_generator)
         feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
         output = sess.run(self.output, feed_dict=feed_dict)

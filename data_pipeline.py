@@ -59,6 +59,7 @@ def data_gen(mode = 'Train'):
         out_envelopes = envelope[indecis]
         out_masks = mask[indecis]
         out_features = features[indecis]/max_feats
+        # out_envelopes = np.array([x/x.max() for x in out_envelopes])
 
         yield np.expand_dims(out_audios, -1), np.expand_dims(out_envelopes, -1), out_features, np.expand_dims(out_masks, -1)
 
