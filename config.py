@@ -41,7 +41,7 @@ filters = 16
 fs = 16000
 num_f0 = 256
 max_phr_len = 16000
-input_features = 1
+input_features = 7
 output_features = 1
 
 kernel_size = 2
@@ -50,6 +50,8 @@ num_filters = 32
 augment_filters_every = 4
 
 wavenet_layers = 12
+
+train_split = 0.9
 
 feats_to_use = ['ac_brightness', 'ac_hardness', 'ac_depth', 'ac_roughness', 'ac_boominess', 'ac_warmth', 'ac_sharpness']
 
@@ -73,7 +75,7 @@ batch_size = 16
 samples_per_file = 4
 
 
-lamda = 0.001
+init_lr = 0.0002
 
 
 comp_mode = 'mfsc'

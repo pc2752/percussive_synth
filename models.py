@@ -80,12 +80,12 @@ def cgm_crossentropy(y_true, y_pred):
     return tf.reduce_mean(loss)
 
 
-def one_hotize(inp, max_index=config.num_phos):
+# def one_hotize(inp, max_index=config.num_phos):
 
 
-    output = np.eye(max_index)[inp.astype(int)]
+#     output = np.eye(max_index)[inp.astype(int)]
 
-    return output
+#     return output
 
 class Model(object):
     def __init__(self):
@@ -148,7 +148,7 @@ class Model(object):
             print('{} : {}'.format(key, value))
             
 
-class NPSS(Model):
+class PercSynth(Model):
 
     def get_optimizers(self):
         """
@@ -175,7 +175,7 @@ class NPSS(Model):
 
         # self.final_loss = cgm_crossentropy(tf.reshape(self.output_placeholder, [config.batch_size, -1, 1]), tf.reshape(self.output, [config.batch_size, -1, 4]))
         # self.final_loss = tf.losses.mean_squared_error(self.output,self.output_placeholder )
-        self.final_loss = tf.reduce_sum(tf.abs(self.output_placeholder- self.output))
+        self.final_loss = tf.reduce_sum(tf.abs(self.output_placeholder- self.output) * self.mask_placeholder)
         # tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(labels= self.output_placeholder, logits = self.output)) 
         # tf.reduce_sum(tf.abs(self.input_placeholder- self.output))
 
@@ -197,22 +197,19 @@ class NPSS(Model):
         Depending on the mode, can return placeholders for either just the generator or both the generator and discriminator.
         """
 
-        self.input_placeholder = tf.placeholder(tf.float32, shape=(None, config.max_phr_len, config.output_features),
+        self.input_placeholder = tf.placeholder(tf.float32, shape=(config.batch_size, config.max_phr_len, 1),
                                            name='input_placeholder')
 
-        self.cond_placeholder = tf.placeholder(tf.float32, shape=(None, config.max_phr_len, config.input_features),
+        self.cond_placeholder = tf.placeholder(tf.float32, shape=(config.batch_size, config.input_features),
                                            name='cond_placeholder')
 
-        self.output_placeholder = tf.placeholder(tf.float32, shape=(None, config.max_phr_len, config.output_features),
+        self.output_placeholder = tf.placeholder(tf.float32, shape=(config.batch_size, config.max_phr_len, 1),
                                            name='output_placeholder')       
 
+        self.mask_placeholder = tf.placeholder(tf.float32, shape=(config.batch_size, config.max_phr_len, 1),
+                                           name='mask_placeholder')       
+
         self.is_train = tf.placeholder(tf.bool, name="is_train")
-
-        # self.speaker_embed_table = tf.get_variable('speaker_embedding',[self.num_speakers, hp.speaker_embedding_size], dtype=tf.float32,
-        #                     initializer=tf.truncated_normal_initializer(stddev=0.5))
-        #             # [N, T_in, speaker_embedding_size]
-        # self.speaker_embed = tf.nn.embedding_lookup(speaker_embed_table, speaker_id)
-
 
 
     def train(self):
@@ -247,15 +244,9 @@ class NPSS(Model):
 
 
             with tf.variable_scope('Training'):
-                for conds, voc_out in data_generator:
+                for out_audios, out_envelopes, out_features, out_masks in data_generator:
 
-                    voc_in = np.roll(voc_out, 1, 1)
-
-                    voc_in[:,0,:] = 0
-
-                    voc_in = voc_in + np.random.normal(0,.5,(voc_in.shape)) * 0.4 
-
-                    final_loss, summary_str = self.train_model(conds, voc_in, voc_out, sess)
+                    final_loss, summary_str = self.train_model(out_audios, out_envelopes, out_features, out_masks, sess)
 
 
                     epoch_final_loss+=final_loss
@@ -277,13 +268,10 @@ class NPSS(Model):
             if (epoch + 1) % config.validate_every == 0:
                 batch_num = 0
                 with tf.variable_scope('Validation'):
-                    for conds, voc_out in val_generator:
+                    for out_audios, out_envelopes, out_features, out_masks in val_generator:
 
-                        voc_in = np.roll(voc_out, 1, 1)
 
-                        voc_in[:,0,:] = 0
-
-                        final_loss, summary_str= self.validate_model(conds, voc_in, voc_out, sess)
+                        final_loss, summary_str= self.validate_model(out_audios, out_envelopes, out_features, out_masks, sess)
                         val_final_loss+=final_loss
 
 
@@ -305,11 +293,11 @@ class NPSS(Model):
             if (epoch + 1) % config.save_every == 0 or (epoch + 1) == config.num_epochs:
                 self.save_model(sess, epoch+1, config.log_dir)
 
-    def train_model(self, conds, voc_in, voc_out, sess):
+    def train_model(self, out_audios, out_envelopes, out_features, out_masks, sess):
         """
         Function to train the model for each epoch
         """
-        feed_dict = {self.input_placeholder: voc_in,self.output_placeholder: voc_out, self.cond_placeholder: conds, self.is_train: True}
+        feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: True}
 
         _,final_loss= sess.run([self.final_train_function, self.final_loss], feed_dict=feed_dict)
 
@@ -317,17 +305,35 @@ class NPSS(Model):
 
         return final_loss, summary_str
 
-    def validate_model(self,conds, voc_in, voc_out, sess):
+    def validate_model(self, out_audios, out_envelopes, out_features, out_masks, sess):
         """
         Function to train the model for each epoch
         """
-        feed_dict = {self.input_placeholder: voc_in,self.output_placeholder: voc_out, self.cond_placeholder: conds, self.is_train: False}
+        feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
 
         final_loss= sess.run(self.final_loss, feed_dict=feed_dict)
 
         summary_str = sess.run(self.summary, feed_dict=feed_dict)
 
         return final_loss, summary_str
+
+    def test_model(self):
+        sess = tf.Session()
+        self.load_model(sess, log_dir = config.log_dir)
+        val_generator = data_gen(mode = 'Val')
+        out_audios, out_envelopes, out_features, out_masks = next(val_generator)
+        feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
+        output = sess.run(self.output, feed_dict=feed_dict)
+        plt.subplot(311)
+        plt.plot(output[0])
+        plt.subplot(312)
+        plt.plot(out_audios[0])
+        plt.subplot(313)
+        plt.plot(out_envelopes[0])
+        plt.show()
+        import pdb;pdb.set_trace()
+
+
 
 
 

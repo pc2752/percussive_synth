@@ -34,25 +34,27 @@ def main():
 
 		length = len(audio)
 
-		env = Envelope(releaseTime=50, attackTime=5)
+		if length<=config.fs:
 
-		envelope = env(essentia.array(audio))
+			env = Envelope(releaseTime=50, attackTime=5)
 
-		audio = np.pad(audio, [0, config.fs - length], mode = 'constant')
+			envelope = env(essentia.array(audio))
 
-		envelope = np.pad(envelope, [0, config.fs - length], mode = 'constant')
+			audio = np.pad(audio, [0, config.fs - length], mode = 'constant')
 
-		mask = np.zeros(config.fs)
+			envelope = np.pad(envelope, [0, config.fs - length], mode = 'constant')
 
-		mask[:length] = 1
+			mask = np.zeros(config.fs)
 
-		features = [lf[1][x] for x in config.feats_to_use]
+			mask[:length] = 1
 
-		with h5py.File(config.feats_dir+'feats.hdf5', mode='a') as hdf5_file:
-			hdf5_file["waveform"][count,:] = audio
-			hdf5_file["envelope"][count,:] = envelope
-			hdf5_file["mask"][count,:] = mask
-			hdf5_file["features"][count,:] = features
+			features = [lf[1][x] for x in config.feats_to_use]
+
+			with h5py.File(config.feats_dir+'feats.hdf5', mode='a') as hdf5_file:
+				hdf5_file["waveform"][count,:] = audio
+				hdf5_file["envelope"][count,:] = envelope
+				hdf5_file["mask"][count,:] = mask
+				hdf5_file["features"][count,:] = features
 		count+=1
 		utils.progress(count,len(files_to_use))
 

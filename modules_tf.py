@@ -136,11 +136,13 @@ def full_network(condsi, env, is_train):
 
     output = tf.layers.batch_normalization(tf.layers.dense(output, config.output_features, name = "Fu_F"), training = is_train)
 
-    return tf.squeeze(output)
+    output = tf.reshape(output, [config.batch_size, config.max_phr_len, -1])
+
+    return output
 
 def main():    
-    vec = tf.placeholder("float", [config.batch_size, config.max_phr_len, config.input_features])
-    tec = np.random.rand(config.batch_size, config.max_phr_len,config.input_features) #  batch_size, time_steps, features
+    vec = tf.placeholder("float", [config.batch_size, config.max_phr_len, 1])
+    tec = np.random.rand(config.batch_size, config.max_phr_len,1) #  batch_size, time_steps, features
     
     conds = tf.placeholder("float", [config.batch_size, 7])
     condi = np.random.rand(config.batch_size, 7) 

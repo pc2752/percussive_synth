@@ -8,12 +8,12 @@ import numpy as np
 import mir_eval
 
 def train(_):
-    model = models.NPSS()
+    model = models.PercSynth()
     model.train()
 
-def eval_hdf5_file(file_name):
-    model = models.NPSS()
-    model.test_file_hdf5(file_name)
+def eval_hdf5_file():
+    model = models.PercSynth()
+    model.test_model()
 
 if __name__ == '__main__':
     if len(sys.argv)<2 or sys.argv[1] == '-help' or sys.argv[1] == '--help' or sys.argv[1] == '--h' or sys.argv[1] == '-h':
@@ -29,15 +29,4 @@ if __name__ == '__main__':
             tf.app.run(main=train)
 
         elif sys.argv[1] == '-e' or sys.argv[1] == '--e' or sys.argv[1] == '--eval' or sys.argv[1] == '-eval':
-            if len(sys.argv)<3:
-                print("Please give a file to evaluate")
-                print([x for x in os.listdir(config.voice_dir) if x.startswith('casas') and not x in config.do_not_use])
-            else:
-                file_name = sys.argv[2]
-                if not file_name.endswith('.hdf5'):
-                    file_name = file_name+'.hdf5'
-                if not file_name in [x for x in os.listdir(config.voice_dir) if x.startswith('casas') and not x in config.do_not_use]:
-                    print("Currently only supporting hdf5 files which are in the dataset, will be expanded later.")
-                    print([x for x in os.listdir(config.voice_dir) if x.startswith('casas') and not x in config.do_not_use])
-                else:
-                    eval_hdf5_file(file_name)
+            eval_hdf5_file()
