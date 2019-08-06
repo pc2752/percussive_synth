@@ -74,8 +74,8 @@ def wave_archi(inputs, conditioning, is_train):
 
 def encoder_conv_block(inputs, layer_num, is_train, num_filters = config.filters):
 
-    output = tf.layers.batch_normalization(tf.nn.relu(tf.layers.conv2d(inputs, num_filters * 2**int(layer_num/config.augment_filters_every), (config.filter_len,1)
-        , strides=(2,1),  padding = 'same', name = "G_"+str(layer_num))), training = is_train)
+    output = tf.nn.relu(tf.layers.batch_normalization(tf.layers.conv2d(inputs, num_filters * 2**int(layer_num/config.augment_filters_every), (config.filter_len,1)
+        , strides=(2,1),  padding = 'same', name = "G_"+str(layer_num), kernel_initializer=tf.random_normal_initializer(stddev=0.02)), training = is_train, name = "Encoder_BN"+str(layer_num)))
     # print(output.shape)
     # print(num_filters * 2**int(layer_num/config.augment_filters_every))
     return output
@@ -84,11 +84,11 @@ def decoder_conv_block(inputs, layer, layer_num, is_train, num_filters = config.
 
     deconv = tf.image.resize_images(inputs, size=(layer.shape[1],1), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 
-    deconv = tf.layers.batch_normalization( tf.nn.relu(tf.layers.conv2d(deconv, layer.shape[-1]
-        , (config.filter_len,1), strides=(1,1),  padding = 'same', name =  "D_"+str(layer_num))), training = is_train)
+    deconv = tf.nn.relu(tf.layers.batch_normalization( tf.layers.conv2d(deconv, layer.shape[-1]
+        , (config.filter_len,1), strides=(1,1),  padding = 'same', name =  "D_"+str(layer_num), kernel_initializer=tf.random_normal_initializer(stddev=0.02)), training = is_train, name = "Decoder_BN"+str(layer_num)))
 
-    print(deconv.shape)
-    print(layer.shape)
+    # print(deconv.shape)
+    # print(layer.shape)
 
     deconv =  tf.concat([deconv, layer], axis = -1)
 
@@ -129,16 +129,38 @@ def full_network(condsi, env, is_train):
 
     inputs = tf.reshape(inputs, [config.batch_size, config.max_phr_len , 1, -1])
 
-    # inputs = tf.layers.batch_normalization(tf.layers.dense(inputs, config.filters
-    #     , name = "S_in"), training = is_train)
+    inputs = tf.nn.relu(tf.layers.batch_normalization(tf.layers.dense(inputs, config.filters
+        , name = "S_in", kernel_initializer=tf.random_normal_initializer(stddev=0.02)), training = is_train), name = "S_in_BN")
 
     output = encoder_decoder_archi(inputs, is_train)
 
-    output = tf.layers.batch_normalization(tf.layers.dense(output, config.output_features, name = "Fu_F"), training = is_train)
+    output = tf.tanh(tf.layers.batch_normalization(tf.layers.dense(output, config.output_features, name = "Fu_F", kernel_initializer=tf.random_normal_initializer(stddev=0.02)), training = is_train))
 
     output = tf.reshape(output, [config.batch_size, config.max_phr_len, -1])
 
     return output
+
+def discriminator(inputs, condsi, is_train):
+
+    conds = tf.tile(tf.reshape(condsi,[config.batch_size,1,-1]),[1,config.max_phr_len,1])
+
+
+    inputs = tf.concat([inputs, conds], axis = -1)
+
+    inputs = tf.reshape(inputs, [config.batch_size, config.max_phr_len , 1, -1])
+
+    inputs = tf.nn.relu(tf.layers.batch_normalization(tf.layers.dense(inputs, config.filters
+        , name = "D_in", kernel_initializer=tf.random_normal_initializer(stddev=0.02)), training = is_train, name = "D_in_BN"))
+
+    encoded = inputs
+
+    for i in range(config.encoder_layers):
+        encoded = encoder_conv_block(encoded, i, is_train)
+    encoded = tf.squeeze(encoded)
+
+    output = tf.layers.batch_normalization(tf.layers.dense(encoded, 1, name = "Fu_F", kernel_initializer=tf.random_normal_initializer(stddev=0.02)), training = is_train, name = "bn_fu_out")
+
+    return tf.squeeze(output)
 
 def main():    
     vec = tf.placeholder("float", [config.batch_size, config.max_phr_len, 1])
@@ -151,7 +173,7 @@ def main():
     # seqlen = tf.placeholder("float", [config.batch_size, 256])
 
     with tf.variable_scope('full_Model') as scope:
-        out_put = full_network( conds,vec, is_train)
+        out_put = discriminator( conds,vec, is_train)
     sess = tf.Session()
     init = tf.global_variables_initializer()
     sess.run(init)

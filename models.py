@@ -148,6 +148,277 @@ class Model(object):
             print('{} : {}'.format(key, value))
             
 
+class PercSynthGAN(Model):
+
+    def get_optimizers(self):
+        """
+        Returns the optimizers for the model, based on the loss functions and the mode. 
+        """
+
+        self.final_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,scope = 'Final_Model')
+        self.d_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,scope = 'Discriminator')
+
+        self.final_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-5)
+        self.dis_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-5)
+
+
+        self.global_step = tf.Variable(0, name='global_step', trainable=False)
+        self.global_step_dis = tf.Variable(0, name='dis_global_step', trainable=False)
+
+
+
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        with tf.control_dependencies(update_ops):
+            self.final_train_function = self.final_optimizer.minimize(self.final_loss, global_step = self.global_step, var_list = self.final_params)
+            self.dis_train_function = self.dis_optimizer.minimize(self.D_loss, global_step = self.global_step_dis, var_list = self.d_params)
+            self.clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, -0.01, 0.01)) for var in self.d_params]
+
+    def loss_function(self):
+        """
+        returns the loss function for the model, based on the mode. 
+        """
+
+
+
+        # self.final_loss = cgm_crossentropy(tf.reshape(self.output_placeholder, [config.batch_size, -1, 1]), tf.reshape(self.output, [config.batch_size, -1, 4]))
+        # self.final_loss = tf.losses.mean_squared_error(self.output,self.output_placeholder )
+        # self.final_loss = tf.reduce_sum(tf.abs(self.output_placeholder- self.output) * self.input_placeholder)
+        self.final_loss = tf.reduce_sum(tf.abs(self.output_placeholder- self.output) * self.input_placeholder)/(config.batch_size*config.max_phr_len) + tf.reduce_mean(self.D_fake+1e-12)
+
+        self.D_loss = tf.reduce_mean(self.D_real +1e-12) - tf.reduce_mean(self.D_fake+1e-12)
+
+    def get_summary(self, sess, log_dir):
+        """
+        Gets the summaries and summary writers for the losses.
+        """
+
+        self.final_summary = tf.summary.scalar('final_loss', self.final_loss)
+
+        self.dis_summary = tf.summary.scalar('dis_loss', self.D_loss)
+
+
+
+
+        self.train_summary_writer = tf.summary.FileWriter(log_dir+'train/', sess.graph)
+        self.val_summary_writer = tf.summary.FileWriter(log_dir+'val/', sess.graph)
+        self.summary = tf.summary.merge_all()
+
+
+    def get_placeholders(self):
+        """
+        Returns the placeholders for the model. 
+        Depending on the mode, can return placeholders for either just the generator or both the generator and discriminator.
+        """
+
+        self.input_placeholder = tf.placeholder(tf.float32, shape=(config.batch_size, config.max_phr_len, 1),
+                                           name='input_placeholder')
+
+        self.cond_placeholder = tf.placeholder(tf.float32, shape=(config.batch_size, config.input_features),
+                                           name='cond_placeholder')
+
+        self.output_placeholder = tf.placeholder(tf.float32, shape=(config.batch_size, config.max_phr_len, 1),
+                                           name='output_placeholder')       
+
+        self.mask_placeholder = tf.placeholder(tf.float32, shape=(config.batch_size, config.max_phr_len, 1),
+                                           name='mask_placeholder')       
+
+        self.is_train = tf.placeholder(tf.bool, name="is_train")
+
+
+    def train(self):
+        """
+        Function to train the model, and save Tensorboard summary, for N epochs. 
+        """
+        sess = tf.Session()
+
+
+        self.loss_function()
+        self.get_optimizers()
+        self.load_model(sess, config.log_dir)
+        self.get_summary(sess, config.log_dir)
+        start_epoch = int(sess.run(tf.train.get_global_step()) / (config.batches_per_epoch_train))
+
+
+        print("Start from: %d" % start_epoch)
+
+
+        for epoch in range(start_epoch, config.num_epochs):
+            data_generator = data_gen()
+            val_generator = data_gen(mode = 'Val')
+            start_time = time.time()
+
+
+            batch_num = 0
+            epoch_final_loss = 0
+            epoch_dis_loss = 0
+
+            val_final_loss = 0
+            val_dis_loss = 0
+
+
+
+
+            with tf.variable_scope('Training'):
+                for out_audios, out_envelopes, out_features, out_masks in data_generator:
+
+                    final_loss, dis_loss, summary_str = self.train_model(out_audios, out_envelopes, out_features, out_masks, epoch, sess)
+
+
+
+                    epoch_final_loss+=final_loss
+                    epoch_dis_loss+=dis_loss
+
+
+                    self.train_summary_writer.add_summary(summary_str, epoch)
+                    self.train_summary_writer.flush()
+
+                    utils.progress(batch_num,config.batches_per_epoch_train, suffix = 'training done')
+
+                    batch_num+=1
+
+                epoch_final_loss = epoch_final_loss/batch_num
+                epoch_dis_loss = epoch_dis_loss/batch_num
+
+
+                print_dict = {"Final Loss": epoch_final_loss}
+                print_dict["Dis Loss"] =  epoch_dis_loss
+
+
+            if (epoch + 1) % config.validate_every == 0:
+                batch_num = 0
+                with tf.variable_scope('Validation'):
+                    for out_audios, out_envelopes, out_features, out_masks in val_generator:
+
+
+                        final_loss, dis_loss, summary_str= self.validate_model(out_audios, out_envelopes, out_features, out_masks, sess)
+                        val_final_loss+=final_loss
+                        val_dis_loss+=dis_loss
+
+
+                        self.val_summary_writer.add_summary(summary_str, epoch)
+                        self.val_summary_writer.flush()
+                        batch_num+=1
+
+                        utils.progress(batch_num, config.batches_per_epoch_val, suffix='validation done')
+
+                    val_final_loss = val_final_loss/batch_num
+                    val_dis_loss = val_dis_loss/batch_num
+
+
+                    print_dict["Val Final Loss"] =  val_final_loss
+                    print_dict["Val Dis Loss"] =  val_dis_loss
+
+
+            end_time = time.time()
+            if (epoch + 1) % config.print_every == 0:
+                self.print_summary(print_dict, epoch, end_time-start_time)
+            if (epoch + 1) % config.save_every == 0 or (epoch + 1) == config.num_epochs:
+                self.save_model(sess, epoch+1, config.log_dir)
+
+    def train_model(self, out_audios, out_envelopes, out_features, out_masks, epoch,  sess):
+        """
+        Function to train the model for each epoch
+        """
+        if epoch<25 or epoch%100 == 0:
+            n_critic = 25
+        else:
+            n_critic = 5
+        feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: True}
+
+        for critic_itr in range(n_critic):
+            sess.run(self.dis_train_function, feed_dict = feed_dict)
+            sess.run(self.clip_discriminator_var_op, feed_dict = feed_dict)
+
+        _,final_loss, dis_loss = sess.run([self.final_train_function, self.final_loss, self.D_loss], feed_dict=feed_dict)
+
+        summary_str = sess.run(self.summary, feed_dict=feed_dict)
+
+        return final_loss, dis_loss, summary_str
+
+    def validate_model(self, out_audios, out_envelopes, out_features, out_masks, sess):
+        """
+        Function to train the model for each epoch
+        """
+        feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
+
+        final_loss, dis_loss= sess.run([self.final_loss, self.D_loss], feed_dict=feed_dict)
+
+        summary_str = sess.run(self.summary, feed_dict=feed_dict)
+
+        return final_loss, dis_loss, summary_str
+
+    def test_model(self):
+        sess = tf.Session()
+        self.load_model(sess, log_dir = config.log_dir)
+        val_generator = data_gen(mode = 'val')
+        out_audios, out_envelopes, out_features, out_masks = next(val_generator)
+
+        feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
+        output = sess.run(self.output, feed_dict=feed_dict)
+        feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: np.ones(out_features.shape)*0.1  , self.mask_placeholder:out_masks, self.is_train: False}
+        output_1 = sess.run(self.output, feed_dict=feed_dict)
+        mod_feats = np.ones(out_features.shape)*0.1 
+        mod_feats[:,0] = 0.9
+        feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: mod_feats, self.mask_placeholder:out_masks, self.is_train: False}
+        output_2 = sess.run(self.output, feed_dict=feed_dict)
+
+        output = output * out_envelopes
+
+        output_1 = output_1 * out_envelopes
+
+        output_2 = output_2 * out_envelopes
+
+        for i in range(config.batch_size):
+            print( [str(out_features[i][x])+":"+config.feats_to_use[x] for x in range(len(config.feats_to_use))])
+            ax1 = plt.subplot(511)
+            ax1.set_title("Output Waveform", fontsize=10)
+            plt.plot(np.clip(output[i][:14000], -1.0,1.0))
+            ax2 = plt.subplot(512)
+            ax2.set_title("Output Waveform 0.1", fontsize=10)
+            plt.plot(np.clip(output_1[i][:14000], -1.0,1.0))
+            ax2 = plt.subplot(513)
+            ax2.set_title("Output Waveform 0.9", fontsize=10)
+            plt.plot(np.clip(output_2[i][:14000], -1.0,1.0))
+            ax2 = plt.subplot(514)
+            ax2.set_title("Ground Truth Waveform", fontsize=10)
+            plt.plot(out_audios[i])
+            ax3 = plt.subplot(515)
+            ax3.set_title("Input Envelope", fontsize=10)
+            plt.plot(out_envelopes[i])
+
+            sf.write('./op_{}.wav'.format(i), np.clip(output[i][:14000], -1.0,1.0), config.fs)
+            sf.write('./op0.1_{}.wav'.format(i), np.clip(output_1[i][:14000], -1.0,1.0), config.fs)
+            sf.write('./op0.2_{}.wav'.format(i), np.clip(output_2[i][:14000], -1.0,1.0), config.fs)
+            sf.write('./gt_{}.wav'.format(i), out_audios[i], config.fs)
+        # ax4 = plt.subplot(414)
+        # ax4.set_title("Input Envelope", fontsize=10)
+        # plt.plot(out_masks[0])
+            plt.show()
+            import pdb;pdb.set_trace()
+
+
+
+
+
+  
+
+
+
+    def model(self):
+        """
+        The main model function, takes and returns tensors.
+        Defined in modules.
+
+        """
+
+        with tf.variable_scope('Final_Model') as scope:
+            self.output = modules.full_network(self.cond_placeholder,self.input_placeholder,  self.is_train)
+
+        with tf.variable_scope('Discriminator') as scope: 
+            self.D_real = modules.discriminator(self.output_placeholder* self.input_placeholder, self.cond_placeholder,  self.is_train)
+            scope.reuse_variables()
+            self.D_fake = modules.discriminator(self.output* self.input_placeholder, self.cond_placeholder,  self.is_train)
+
 class PercSynth(Model):
 
     def get_optimizers(self):
@@ -453,12 +724,10 @@ class PercSynth(Model):
         """
         The main model function, takes and returns tensors.
         Defined in modules.
-
         """
 
         with tf.variable_scope('NPSS') as scope:
             self.output = modules.full_network(self.cond_placeholder,self.input_placeholder,  self.is_train)
-
 
 
 def test():

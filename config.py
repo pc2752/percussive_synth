@@ -4,12 +4,15 @@ import tensorflow as tf
 
 wav_dir = '../datasets/percussive_synth/'
 
-
+mode = 'L1'
 
 feats_dir = './feats/'
 
+if mode =='GAN':
+	log_dir = './log_GAN/'
+elif mode =='L1':
+	log_dir = './log/'
 
-log_dir = './log/'
 
 
 data_log = './log/data_log.log'
@@ -34,8 +37,8 @@ f0_threshold = 1
 
 
 filter_len = 5
-encoder_layers = 9
-filters = 16
+encoder_layers = 15
+filters = 32
 
 
 fs = 16000
@@ -47,7 +50,7 @@ output_features = 1
 kernel_size = 2
 num_filters = 32
 
-augment_filters_every = 4
+augment_filters_every = 3
 
 wavenet_layers = 12
 

@@ -8,11 +8,18 @@ import numpy as np
 import mir_eval
 
 def train(_):
-    model = models.PercSynth()
+    if config.mode =='GAN':
+        model = models.PercSynthGAN()
+    elif config.mode =='L1':
+        model = models.PercSynth()
+    
     model.train()
 
 def eval_hdf5_file():
-    model = models.PercSynth()
+    if config.mode =='GAN':
+        model = models.PercSynthGAN()
+    elif config.mode =='L1':
+        model = models.PercSynth()
     model.test_model()
 
 if __name__ == '__main__':

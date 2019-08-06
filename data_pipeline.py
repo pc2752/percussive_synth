@@ -43,6 +43,7 @@ def data_gen(mode = 'Train'):
         envelope = hdf5_file["envelope"][()]
         mask = hdf5_file["mask"][()]
         features = hdf5_file["features"][()]
+    # import pdb;pdb.set_trace()    
     max_feats = features.max(axis = 0)
     train_split = int(len(audios)*config.train_split)
     if mode == "Train":
@@ -59,7 +60,8 @@ def data_gen(mode = 'Train'):
         out_envelopes = envelope[indecis]
         out_masks = mask[indecis]
         out_features = features[indecis]/max_feats
-        # out_envelopes = np.array([x/x.max() for x in out_envelopes])
+        out_envelopes = np.array([x/(x+1e-12).max() for x in out_envelopes])
+
 
         yield np.expand_dims(out_audios, -1), np.expand_dims(out_envelopes, -1), out_features, np.expand_dims(out_masks, -1)
 
