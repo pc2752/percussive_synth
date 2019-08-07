@@ -4,7 +4,7 @@ import tensorflow as tf
 
 wav_dir = '../datasets/percussive_synth/'
 
-mode = 'Content'
+mode = 'L1'
 
 feats_dir = './feats/'
 

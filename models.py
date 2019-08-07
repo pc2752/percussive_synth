@@ -383,7 +383,7 @@ class PercSynthGAN(Model):
             ax2.set_title("Ground Truth Waveform", fontsize=10)
             plt.plot(out_audios[i])
             ax3 = plt.subplot(313)
-            ax3.set_title("Input Envelope", fontsize=10)
+            ax3.set_title("Input Envelope: {}".format([str(out_features[i][x])+":"+config.feats_to_use[x] for x in range(len(config.feats_to_use))]), fontsize=10)
             plt.plot(out_envelopes[i])
             plt.show()
             synth = utils.query_yes_no("Synthesize output? ")
@@ -633,7 +633,7 @@ class PercSynth(Model):
             ax2.set_title("Ground Truth Waveform", fontsize=10)
             plt.plot(out_audios[i])
             ax3 = plt.subplot(313)
-            ax3.set_title("Input Envelope", fontsize=10)
+            ax3.set_title("Input Envelope: {}".format([str(out_features[i][x])+":"+config.feats_to_use[x] for x in range(len(config.feats_to_use))]), fontsize=10)
             plt.plot(out_envelopes[i])
             plt.show()
             synth = utils.query_yes_no("Synthesize output? ")
@@ -677,8 +677,8 @@ class PercSynthContent(Model):
         self.final_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,scope = 'Final_Model')
         self.d_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,scope = 'Discriminator')
 
-        self.final_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-5)
-        self.dis_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-5)
+        self.final_optimizer = tf.train.AdamOptimizer(learning_rate = config.init_lr)
+        self.dis_optimizer = tf.train.AdamOptimizer(learning_rate = config.init_lr)
 
 
         self.global_step = tf.Variable(0, name='global_step', trainable=False)
@@ -702,8 +702,8 @@ class PercSynthContent(Model):
         # self.final_loss = cgm_crossentropy(tf.reshape(self.output_placeholder, [config.batch_size, -1, 1]), tf.reshape(self.output, [config.batch_size, -1, 4]))
         # self.final_loss = tf.losses.mean_squared_error(self.output,self.output_placeholder )
         # self.final_loss = tf.reduce_sum(tf.abs(self.output_placeholder- self.output) * self.input_placeholder)
-        self.final_loss = tf.reduce_sum(tf.abs(self.output_placeholder- self.output) * self.input_placeholder)/(config.batch_size*config.max_phr_len) + tf.reduce_mean(tf.abs(self.fake_cont - self.cond_placeholder)) + tf.reduce_mean(tf.abs(self.fake_emb - self.real_emb))
-
+        self.final_loss = tf.reduce_sum(tf.abs(self.output_placeholder- self.output) * self.input_placeholder)/(config.batch_size*config.max_phr_len)  + tf.reduce_mean(tf.abs(self.fake_emb - self.real_emb))
+# + tf.reduce_mean(tf.abs(self.fake_cont - self.cond_placeholder))
         self.D_loss = tf.reduce_mean(tf.abs(self.real_cont - self.cond_placeholder))
 
 
@@ -840,14 +840,14 @@ class PercSynthContent(Model):
         """
         Function to train the model for each epoch
         """
-        # if epoch<25 or epoch%100 == 0:
-        #     n_critic = 25
-        # else:
-        #     n_critic = 5
+        if epoch<25 or epoch%100 == 0:
+            n_critic = 25
+        else:
+            n_critic = 5
         feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: True}
 
-        # for critic_itr in range(n_critic):
-        sess.run(self.dis_train_function, feed_dict = feed_dict)
+        for critic_itr in range(n_critic):
+            sess.run(self.dis_train_function, feed_dict = feed_dict)
             # sess.run(self.clip_discriminator_var_op, feed_dict = feed_dict)
 
         _,final_loss, dis_loss = sess.run([self.final_train_function, self.final_loss, self.D_loss], feed_dict=feed_dict)
@@ -892,7 +892,7 @@ class PercSynthContent(Model):
         for i in range(config.batch_size):
             print( [str(out_features[i][x])+":"+config.feats_to_use[x] for x in range(len(config.feats_to_use))])
             ax1 = plt.subplot(311)
-            ax1.set_title("Output Waveform", fontsize=10)
+            ax1.set_title("Output Waveform"., fontsize=10)
             plt.plot(np.clip(output[i][:14000], -1.0,1.0))
             # ax2 = plt.subplot(512)
             # ax2.set_title("Output Waveform 0.1", fontsize=10)
@@ -904,7 +904,7 @@ class PercSynthContent(Model):
             ax2.set_title("Ground Truth Waveform", fontsize=10)
             plt.plot(out_audios[i])
             ax3 = plt.subplot(313)
-            ax3.set_title("Input Envelope", fontsize=10)
+            ax3.set_title("Input Envelope: {}".format([str(out_features[i][x])+":"+config.feats_to_use[x] for x in range(len(config.feats_to_use))]), fontsize=10)
             plt.plot(out_envelopes[i])
             plt.show()
             synth = utils.query_yes_no("Synthesize output? ")
@@ -913,16 +913,13 @@ class PercSynthContent(Model):
             if synth:
 
                 sf.write('./op_{}.wav'.format(i), np.clip(output[i][:14000], -1.0,1.0), config.fs)
-            # sf.write('./op0.1_{}.wav'.format(i), np.clip(output_1[i][:14000], -1.0,1.0), config.fs)
-            # sf.write('./op0.2_{}.wav'.format(i), np.clip(output_2[i][:14000], -1.0,1.0), config.fs)
+
             synth = utils.query_yes_no("Synthesize  Ground Truth? ")
 
             if synth:
 
                 sf.write('./gt_{}.wav'.format(i), out_audios[i], config.fs)
-        # ax4 = plt.subplot(414)
-        # ax4.set_title("Input Envelope", fontsize=10)
-        # plt.plot(out_masks[0])
+
             
             import pdb;pdb.set_trace()
 
