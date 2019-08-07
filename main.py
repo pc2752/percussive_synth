@@ -12,6 +12,8 @@ def train(_):
         model = models.PercSynthGAN()
     elif config.mode =='L1':
         model = models.PercSynth()
+    elif config.mode == 'Content':
+        model = models.PercSynthContent()
     
     model.train()
 
@@ -20,6 +22,8 @@ def eval_hdf5_file():
         model = models.PercSynthGAN()
     elif config.mode =='L1':
         model = models.PercSynth()
+    elif config.mode == 'Content':
+        model = models.PercSynthContent()
     model.test_model()
 
 if __name__ == '__main__':

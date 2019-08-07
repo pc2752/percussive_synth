@@ -4,7 +4,7 @@ import tensorflow as tf
 
 wav_dir = '../datasets/percussive_synth/'
 
-mode = 'L1'
+mode = 'Content'
 
 feats_dir = './feats/'
 
@@ -12,6 +12,8 @@ if mode =='GAN':
 	log_dir = './log_GAN/'
 elif mode =='L1':
 	log_dir = './log/'
+elif mode == 'Content':
+	log_dir = './log_content/'
 
 
 
