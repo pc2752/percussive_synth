@@ -608,30 +608,30 @@ class PercSynth(Model):
         self.load_model(sess, log_dir = config.log_dir)
         self.loss_function()
 
-        with h5py.File(config.feats_dir+'feats.hdf5', mode='r') as hdf5_file:
-            audios = hdf5_file["waveform"][()]
-            envelope = hdf5_file["envelope"][()]
-            mask = hdf5_file["mask"][()]
-            features = hdf5_file["features"][()]
+        # with h5py.File(config.feats_dir+'feats.hdf5', mode='r') as hdf5_file:
+        #     audios = hdf5_file["waveform"][()]
+        #     envelope = hdf5_file["envelope"][()]
+        #     mask = hdf5_file["mask"][()]
+        #     features = hdf5_file["features"][()]
 
-        num_batches = len(audios)/config.batch_size
+        # num_batches = len(audios)/config.batch_size
 
-        out_losses = []
-        out_sounds = []
+        # out_losses = []
+        # out_sounds = []
 
-        for i in range(int(num_batches)):
-            feed_dict = {self.input_placeholder: np.expand_dims(envelope[i*config.batch_size:(i+1)*config.batch_size], -1), self.output_placeholder: np.expand_dims(audios[i*config.batch_size:(i+1)*config.batch_size], -1), self.cond_placeholder: features[i*config.batch_size:(i+1)*config.batch_size], self.mask_placeholder: np.expand_dims(mask[i*config.batch_size:(i+1)*config.batch_size], -1), self.is_train: False}
-            output, losses = sess.run([self.output, self.show_loss], feed_dict=feed_dict)
-            if i == 0:
+        # for i in range(int(num_batches)):
+        #     feed_dict = {self.input_placeholder: np.expand_dims(envelope[i*config.batch_size:(i+1)*config.batch_size], -1), self.output_placeholder: np.expand_dims(audios[i*config.batch_size:(i+1)*config.batch_size], -1), self.cond_placeholder: features[i*config.batch_size:(i+1)*config.batch_size], self.mask_placeholder: np.expand_dims(mask[i*config.batch_size:(i+1)*config.batch_size], -1), self.is_train: False}
+        #     output, losses = sess.run([self.output, self.show_loss], feed_dict=feed_dict)
+        #     if i == 0:
 
-                out_losses.append(losses.sum(axis = -1).sum(axis=-1))
-                out_losses = np.squeeze(np.array(out_losses))
-            else:
-                # import pdb;pdb.set_trace()
-                out_losses = np.concatenate((out_losses, losses.sum(axis = -1).sum(axis=-1)), axis = 0)
-            utils.progress(i, int(num_batches), suffix = 'Processed')
+        #         out_losses.append(losses.sum(axis = -1).sum(axis=-1))
+        #         out_losses = np.squeeze(np.array(out_losses))
+        #     else:
+        #         # import pdb;pdb.set_trace()
+        #         out_losses = np.concatenate((out_losses, losses.sum(axis = -1).sum(axis=-1)), axis = 0)
+        #     utils.progress(i, int(num_batches), suffix = 'Processed')
 
-        import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
 
 
 
@@ -687,7 +687,7 @@ class PercSynth(Model):
 
             # if synth:
 
-            sf.write('./op_1.wav', np.clip(audios[3684], -1.0,1.0), config.fs)
+            sf.write('./op_{}.wav'.format(i), np.clip(output[i][:14000], -1.0,1.0), config.fs)
 
             sf.write('./op_{}_bright.wav'.format(i), np.clip(output_bright[i][:14000], -1.0,1.0), config.fs)
             sf.write('./op_{}_low.wav'.format(i), np.clip(output_low[i][:14000], -1.0,1.0), config.fs)
