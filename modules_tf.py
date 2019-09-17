@@ -181,6 +181,47 @@ def content(inputs, is_train):
     return encoded, tf.squeeze(output)
 
 
+def content_encode(inputs, is_train):
+
+    inputs = tf.reshape(inputs, [config.batch_size, config.max_phr_len , 1, -1])
+
+    inputs = tf.nn.relu(tf.layers.batch_normalization(tf.layers.dense(inputs, config.filters
+        , name = "D_in", kernel_initializer=tf.random_normal_initializer(stddev=0.02)), training = is_train, name = "D_in_BN"))
+
+    encoded = inputs
+
+    for i in range(config.encoder_layers):
+        encoded = encoder_conv_block(encoded, i, is_train)
+    encoded = tf.squeeze(encoded)
+
+    output = tf.layers.batch_normalization(tf.layers.dense(encoded, 4, name = "Fu_F", kernel_initializer=tf.random_normal_initializer(stddev=0.02)), training = is_train, name = "bn_fu_out")
+
+    # import pdb;pdb.set_trace()
+
+    return tf.squeeze(output)
+
+def full_network_encode(encoded, condsi, env, is_train):
+
+    conds = tf.concat([encoded, condsi], axis = -1)
+
+    conds = tf.tile(tf.reshape(conds,[config.batch_size,1,-1]),[1,config.max_phr_len,1])
+
+
+    inputs = tf.concat([conds, env], axis = -1)
+
+    inputs = tf.reshape(inputs, [config.batch_size, config.max_phr_len , 1, -1])
+
+    inputs = tf.nn.relu(tf.layers.batch_normalization(tf.layers.dense(inputs, config.filters
+        , name = "S_in", kernel_initializer=tf.random_normal_initializer(stddev=0.02)), training = is_train), name = "S_in_BN")
+
+    output = encoder_decoder_archi(inputs, is_train)
+
+    output = tf.tanh(tf.layers.batch_normalization(tf.layers.dense(output, config.output_features, name = "Fu_F", kernel_initializer=tf.random_normal_initializer(stddev=0.02)), training = is_train))
+
+    output = tf.reshape(output, [config.batch_size, config.max_phr_len, -1])
+
+    return output
+
 def main():    
     vec = tf.placeholder("float", [config.batch_size, config.max_phr_len, 1])
     tec = np.random.rand(config.batch_size, config.max_phr_len,1) #  batch_size, time_steps, features

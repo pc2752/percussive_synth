@@ -14,7 +14,8 @@ def train(_):
         model = models.PercSynth()
     elif config.mode == 'Content':
         model = models.PercSynthContent()
-    
+    elif config.mode == 'Encode':
+        model = models.PercSynthEncode()
     model.train()
 
 def eval_hdf5_file():
@@ -24,6 +25,8 @@ def eval_hdf5_file():
         model = models.PercSynth()
     elif config.mode == 'Content':
         model = models.PercSynthContent()
+    elif config.mode == 'Encode':
+        model = models.PercSynthEncode()
     model.test_model()
 
 if __name__ == '__main__':

@@ -45,11 +45,19 @@ def data_gen(mode = 'Train'):
         features = hdf5_file["features"][()]
     # import pdb;pdb.set_trace()    
     max_feats = features.max(axis = 0)
+
+    audios = np.delete(audios, config.remove_indecis, axis=0)
+    envelope = np.delete(envelope, config.remove_indecis, axis=0)
+    mask = np.delete(mask, config.remove_indecis, axis=0)
+    features = np.delete(features, config.remove_indecis, axis=0)
+
     train_split = int(len(audios)*config.train_split)
+
     if mode == "Train":
         batches_per_epoch = config.batches_per_epoch_train
     else:
         batches_per_epoch = config.batches_per_epoch_val
+
     for i in range(batches_per_epoch):
         if mode == "Train":
             indecis = np.random.randint(train_split, size = config.batch_size)
