@@ -2,7 +2,7 @@ import numpy as np
 import os
 import time
 import h5py
-
+import random
 import matplotlib.pyplot as plt
 import collections
 import config
@@ -44,25 +44,35 @@ def data_gen(mode = 'Train'):
         mask = hdf5_file["mask"][()]
         features = hdf5_file["features"][()]
     # import pdb;pdb.set_trace()    
-    max_feats = features.max(axis = 0)
+    
 
     audios = np.delete(audios, config.remove_indecis, axis=0)
     envelope = np.delete(envelope, config.remove_indecis, axis=0)
     mask = np.delete(mask, config.remove_indecis, axis=0)
     features = np.delete(features, config.remove_indecis, axis=0)
 
+    max_feats = features.max(axis = 0)
+
     train_split = int(len(audios)*config.train_split)
+
+
+
 
     if mode == "Train":
         batches_per_epoch = config.batches_per_epoch_train
+        in_indecis = np.arange(train_split)
     else:
+        in_indecis = np.arange(train_split, len(audios))
         batches_per_epoch = config.batches_per_epoch_val
 
-    for i in range(batches_per_epoch):
-        if mode == "Train":
-            indecis = np.random.randint(train_split, size = config.batch_size)
-        else:
-            indecis = np.random.randint(train_split, audios.shape[0], size = config.batch_size)
+        random.shuffle(in_indecis)
+
+    for i, idx_batch in enumerate(range(batches_per_epoch)):
+
+        i_start = i * config.batch_size
+        i_end = min([(i + 1) * config.batch_size, len(in_indecis)])
+        indecis = in_indecis[i_start:i_end]
+        indecis.sort()
 
         out_audios = audios[indecis]
         out_envelopes = envelope[indecis]

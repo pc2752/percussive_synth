@@ -643,18 +643,20 @@ class PercSynth(Model):
 
         feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
         output, losses = sess.run([self.output, self.show_loss], feed_dict=feed_dict)
+        output = output* out_envelopes
 
         out_features[:,0] = 0.2
 
 
 
-        feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
+        feed_dict = {self.input_placeholder: out_envelopes, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
         output_low = sess.run(self.output, feed_dict=feed_dict)
+        output_low = output_low * out_envelopes
 
         out_features[:,0] =  0.8
 
-        feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
-        output_bright = sess.run(self.output, feed_dict=feed_dict)        
+        feed_dict = {self.input_placeholder: out_envelopes, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
+        output_low = output_low * out_envelopes        
 
         # output = output * out_envelopes
 
@@ -889,8 +891,39 @@ class PercSynthEncode(Model):
     def test_model(self):
         sess = tf.Session()
         self.load_model(sess, log_dir = config.log_dir)
+        self.loss_function()
+
+        # with h5py.File(config.feats_dir+'feats.hdf5', mode='r') as hdf5_file:
+        #     audios = hdf5_file["waveform"][()]
+        #     envelope = hdf5_file["envelope"][()]
+        #     mask = hdf5_file["mask"][()]
+        #     features = hdf5_file["features"][()]
+
+        # num_batches = len(audios)/config.batch_size
+
+        # out_losses = []
+        # out_sounds = []
+
+        # for i in range(int(num_batches)):
+        #     feed_dict = {self.input_placeholder: np.expand_dims(envelope[i*config.batch_size:(i+1)*config.batch_size], -1), self.output_placeholder: np.expand_dims(audios[i*config.batch_size:(i+1)*config.batch_size], -1), self.cond_placeholder: features[i*config.batch_size:(i+1)*config.batch_size], self.mask_placeholder: np.expand_dims(mask[i*config.batch_size:(i+1)*config.batch_size], -1), self.is_train: False}
+        #     output, losses = sess.run([self.output, self.show_loss], feed_dict=feed_dict)
+        #     if i == 0:
+
+        #         out_losses.append(losses.sum(axis = -1).sum(axis=-1))
+        #         out_losses = np.squeeze(np.array(out_losses))
+        #     else:
+        #         # import pdb;pdb.set_trace()
+        #         out_losses = np.concatenate((out_losses, losses.sum(axis = -1).sum(axis=-1)), axis = 0)
+        #     utils.progress(i, int(num_batches), suffix = 'Processed')
+
+        # import pdb;pdb.set_trace()
+
+
+
         val_generator = data_gen(mode = 'val')
         out_audios, out_envelopes, out_features, out_masks = next(val_generator)
+
+        bobo = out_features
 
 
         feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
@@ -908,29 +941,30 @@ class PercSynthEncode(Model):
         feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
         output_bright = sess.run(self.output, feed_dict=feed_dict)        
 
-        output = output * out_envelopes
+        # output = output * out_envelopes
 
-        output_bright = output_bright * out_envelopes
+        # output_bright = output_bright * out_envelopes
 
-        output_low = output_low * out_envelopes
+        # output_low = output_low * out_envelopes
 
         for i in range(config.batch_size):
-            print( [str(out_features[i][x])+":"+config.feats_to_use[x] for x in range(len(config.feats_to_use))])
-            ax1 = plt.subplot(411)
+            # print("Loss: {}".format(np.mean(losses[i])))
+            print([str(bobo[i][x])+":"+config.feats_to_use[x] for x in range(len(config.feats_to_use))])
+            ax1 = plt.subplot(511)
             ax1.set_title("Output Waveform", fontsize=10)
             plt.plot(np.clip(output[i][:14000], -1.0,1.0))
-            ax1 = plt.subplot(412)
+            ax1 = plt.subplot(512)
             ax1.set_title("Output Waveform Bright", fontsize=10)
             plt.plot(np.clip(output_bright[i][:14000], -1.0,1.0))
-            ax1 = plt.subplot(413)
+            ax1 = plt.subplot(513)
             ax1.set_title("Output Waveform Not Bright", fontsize=10)
             plt.plot(np.clip(output_low[i][:14000], -1.0,1.0))
-            ax2 = plt.subplot(414)
+            ax2 = plt.subplot(514)
             ax2.set_title("Ground Truth Waveform", fontsize=10)
             plt.plot(out_audios[i])
-            # ax3 = plt.subplot(515)
-            # ax3.set_title("Input Envelope", fontsize=10)
-            # plt.plot(out_envelopes[i])
+            ax3 = plt.subplot(515)
+            ax3.set_title("Input Envelope", fontsize=10)
+            plt.plot(out_envelopes[i])
 
             plt.show()
             # synth = utils.query_yes_no("Synthesize output? ")
