@@ -10,12 +10,14 @@ import mir_eval
 import pandas as pd
 from random import randint
 import librosa
+import json
 # import sig_process
 
 import soundfile as sf
 
 import matplotlib.pyplot as plt
 from scipy.ndimage import filters
+from tensorflow.python.saved_model.signature_def_utils_impl import predict_signature_def
 
 def cgm_crossentropy(y_true, y_pred):
     # assume y_pred is of size (batch_size,nframes,3*n), with y_pred(:,:,0:n)=mean, y_pred(:,:,n:2*n)=variance, y_pred(:,:,2*n:3*n)=value
@@ -472,6 +474,8 @@ class PercSynth(Model):
 
         self.final_summary = tf.summary.scalar('final_loss', self.final_loss)
 
+        self.summary_audio = tf.summary.audio('audios', self.output, config.fs)
+
 
         self.train_summary_writer = tf.summary.FileWriter(log_dir+'train/', sess.graph)
         self.val_summary_writer = tf.summary.FileWriter(log_dir+'val/', sess.graph)
@@ -603,110 +607,172 @@ class PercSynth(Model):
 
         return final_loss, summary_str
 
+    def export_model(self):
+        sess = tf.Session()
+        self.load_model(sess, log_dir = config.log_dir)
+        builder = tf.saved_model.builder.SavedModelBuilder('./export_model/')
+        signature = predict_signature_def(inputs={'input_placeholder': self.input_placeholder, 'cond_placeholder': self.cond_placeholder, "is_train": self.is_train},
+                                      outputs={'output': self.output})
+        print(signature)
+        builder.add_meta_graph_and_variables(sess,
+                                         ["predict"], signature_def_map={'predict': signature},
+                                         strip_default_attrs=True)
+        builder.save() 
+
+
     def test_model(self):
         sess = tf.Session()
         self.load_model(sess, log_dir = config.log_dir)
         self.loss_function()
-
-        # with h5py.File(config.feats_dir+'feats.hdf5', mode='r') as hdf5_file:
-        #     audios = hdf5_file["waveform"][()]
-        #     envelope = hdf5_file["envelope"][()]
-        #     mask = hdf5_file["mask"][()]
-        #     features = hdf5_file["features"][()]
-
-        # num_batches = len(audios)/config.batch_size
-
-        # out_losses = []
-        # out_sounds = []
-
-        # for i in range(int(num_batches)):
-        #     feed_dict = {self.input_placeholder: np.expand_dims(envelope[i*config.batch_size:(i+1)*config.batch_size], -1), self.output_placeholder: np.expand_dims(audios[i*config.batch_size:(i+1)*config.batch_size], -1), self.cond_placeholder: features[i*config.batch_size:(i+1)*config.batch_size], self.mask_placeholder: np.expand_dims(mask[i*config.batch_size:(i+1)*config.batch_size], -1), self.is_train: False}
-        #     output, losses = sess.run([self.output, self.show_loss], feed_dict=feed_dict)
-        #     if i == 0:
-
-        #         out_losses.append(losses.sum(axis = -1).sum(axis=-1))
-        #         out_losses = np.squeeze(np.array(out_losses))
-        #     else:
-        #         # import pdb;pdb.set_trace()
-        #         out_losses = np.concatenate((out_losses, losses.sum(axis = -1).sum(axis=-1)), axis = 0)
-        #     utils.progress(i, int(num_batches), suffix = 'Processed')
-
-        # import pdb;pdb.set_trace()
-
-
-
         val_generator = data_gen(mode = 'val')
-        out_audios, out_envelopes, out_features, out_masks = next(val_generator)
+        batch_num = 0
+        out_dict = {}
+        for out_audios, out_envelopes, out_features, out_masks, out_files in val_generator:
+        
+            feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
+            output, losses = sess.run([self.output, self.show_loss], feed_dict=feed_dict)
+            output = output* out_envelopes
 
-        bobo = out_features
+            for i in range(config.batch_size):
+                sf.write('./outputs/op_{}_{}.wav'.format(batch_num,i), np.clip(output[i], -1.0,1.0), config.fs)
+                sf.write('./outputs/gt_{}_{}.wav'.format(batch_num,i), out_audios[i], config.fs)
+                out_dict['op_{}_{}_.wav'.format(batch_num,i)] = out_files[i]
 
+            for j, feat in enumerate(config.feats_to_use):
+                feats_low = np.copy(out_features)
+                feats_low[:,j] = 0.2
+                feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: feats_low, self.mask_placeholder:out_masks, self.is_train: False}
+                output_low = sess.run(self.output, feed_dict=feed_dict)
+                output_low = output_low* out_envelopes
+                for i in range(config.batch_size):
+                    sf.write('./outputs/op_{}_{}_{}_low.wav'.format(batch_num, i, feat), np.clip(output_low[i], -1.0,1.0), config.fs)
 
-        feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
-        output, losses = sess.run([self.output, self.show_loss], feed_dict=feed_dict)
-        output = output* out_envelopes
-
-        out_features[:,0] = 0.2
-
-
-
-        feed_dict = {self.input_placeholder: out_envelopes, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
-        output_low = sess.run(self.output, feed_dict=feed_dict)
-        output_low = output_low * out_envelopes
-
-        out_features[:,0] =  0.8
-
-        feed_dict = {self.input_placeholder: out_envelopes, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
-        output_low = output_low * out_envelopes        
-
-        # output = output * out_envelopes
-
-        # output_bright = output_bright * out_envelopes
-
-        # output_low = output_low * out_envelopes
-
-        for i in range(config.batch_size):
-            print("Loss: {}".format(np.mean(losses[i])))
-            print([str(bobo[i][x])+":"+config.feats_to_use[x] for x in range(len(config.feats_to_use))])
-            ax1 = plt.subplot(511)
-            ax1.set_title("Output Waveform", fontsize=10)
-            plt.plot(np.clip(output[i][:14000], -1.0,1.0))
-            ax1 = plt.subplot(512)
-            ax1.set_title("Output Waveform Bright", fontsize=10)
-            plt.plot(np.clip(output_bright[i][:14000], -1.0,1.0))
-            ax1 = plt.subplot(513)
-            ax1.set_title("Output Waveform Not Bright", fontsize=10)
-            plt.plot(np.clip(output_low[i][:14000], -1.0,1.0))
-            ax2 = plt.subplot(514)
-            ax2.set_title("Ground Truth Waveform", fontsize=10)
-            plt.plot(out_audios[i])
-            ax3 = plt.subplot(515)
-            ax3.set_title("Input Envelope", fontsize=10)
-            plt.plot(out_envelopes[i])
-
-            plt.show()
-            # synth = utils.query_yes_no("Synthesize output? ")
+                feats_mid = np.copy(out_features)
+                feats_mid[:,j] = 0.5
+                feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: feats_mid, self.mask_placeholder:out_masks, self.is_train: False}
+                output_mid = sess.run(self.output, feed_dict=feed_dict)
+                output_mid = output_mid* out_envelopes
+                for i in range(config.batch_size):
+                    sf.write('./outputs/op_{}_{}_{}_mid.wav'.format(batch_num,i, feat), np.clip(output_mid[i], -1.0,1.0), config.fs)
 
 
-            # if synth:
+                feats_high = np.copy(out_features)
+                feats_high[:,j] = 0.8
+                feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: feats_high, self.mask_placeholder:out_masks, self.is_train: False}
+                output_high = sess.run(self.output, feed_dict=feed_dict)
+                output_high = output_high* out_envelopes
+                for i in range(config.batch_size):
+                    sf.write('./outputs/op_{}_{}_{}_high.wav'.format(batch_num,i, feat), np.clip(output_high[i], -1.0,1.0), config.fs)
+                    
+            batch_num+=1
+            utils.progress(batch_num, config.batches_per_epoch_val, suffix='evaluation done')
+        with open('mapping.json', 'w') as fp:
+            json.dump(out_dict, fp)
 
-            sf.write('./op_{}.wav'.format(i), np.clip(output[i][:14000], -1.0,1.0), config.fs)
 
-            sf.write('./op_{}_bright.wav'.format(i), np.clip(output_bright[i][:14000], -1.0,1.0), config.fs)
-            sf.write('./op_{}_low.wav'.format(i), np.clip(output_low[i][:14000], -1.0,1.0), config.fs)
-            # sf.write('./op0.1_{}.wav'.format(i), np.clip(output_1[i][:14000], -1.0,1.0), config.fs)
-            # sf.write('./op0.2_{}.wav'.format(i), np.clip(output_2[i][:14000], -1.0,1.0), config.fs)
-            # synth = utils.query_yes_no("Synthesize  Ground Truth? ")
 
-            # if synth:
+    # def test_model(self):
+    #     sess = tf.Session()
+    #     self.load_model(sess, log_dir = config.log_dir)
+    #     self.loss_function()
 
-            sf.write('./gt_{}.wav'.format(i), out_audios[i], config.fs)
-        # ax4 = plt.subplot(414)
-        # ax4.set_title("Input Envelope", fontsize=10)
-        # plt.plot(out_masks[0])
+    #     # with h5py.File(config.feats_dir+'feats.hdf5', mode='r') as hdf5_file:
+    #     #     audios = hdf5_file["waveform"][()]
+    #     #     envelope = hdf5_file["envelope"][()]
+    #     #     mask = hdf5_file["mask"][()]
+    #     #     features = hdf5_file["features"][()]
+
+    #     # num_batches = len(audios)/config.batch_size
+
+    #     # out_losses = []
+    #     # out_sounds = []
+
+    #     # for i in range(int(num_batches)):
+    #     #     feed_dict = {self.input_placeholder: np.expand_dims(envelope[i*config.batch_size:(i+1)*config.batch_size], -1), self.output_placeholder: np.expand_dims(audios[i*config.batch_size:(i+1)*config.batch_size], -1), self.cond_placeholder: features[i*config.batch_size:(i+1)*config.batch_size], self.mask_placeholder: np.expand_dims(mask[i*config.batch_size:(i+1)*config.batch_size], -1), self.is_train: False}
+    #     #     output, losses = sess.run([self.output, self.show_loss], feed_dict=feed_dict)
+    #     #     if i == 0:
+
+    #     #         out_losses.append(losses.sum(axis = -1).sum(axis=-1))
+    #     #         out_losses = np.squeeze(np.array(out_losses))
+    #     #     else:
+    #     #         # import pdb;pdb.set_trace()
+    #     #         out_losses = np.concatenate((out_losses, losses.sum(axis = -1).sum(axis=-1)), axis = 0)
+    #     #     utils.progress(i, int(num_batches), suffix = 'Processed')
+
+    #     # import pdb;pdb.set_trace()
+
+
+
+    #     val_generator = data_gen(mode = 'val')
+    #     out_audios, out_envelopes, out_features, out_masks = next(val_generator)
+
+    #     bobo = np.copy(out_features)
+
+
+    #     feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
+    #     output, losses = sess.run([self.output, self.show_loss], feed_dict=feed_dict)
+    #     output = output* out_envelopes
+
+    #     out_features[:,4] = 0.2
+
+
+
+    #     feed_dict = {self.input_placeholder: out_envelopes, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
+    #     output_low = sess.run(self.output, feed_dict=feed_dict)
+    #     output_low = output_low * out_envelopes
+
+    #     out_features[:,4] =  0.8
+
+    #     feed_dict = {self.input_placeholder: out_envelopes, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
+    #     output_bright = sess.run(self.output, feed_dict=feed_dict)        
+
+    #     # output = output * out_envelopes
+
+    #     # output_bright = output_bright * out_envelopes
+
+    #     # output_low = output_low * out_envelopes
+
+    #     for i in range(config.batch_size):
+    #         print("Loss: {}".format(np.mean(losses[i])))
+    #         print([str(bobo[i][x])+":"+config.feats_to_use[x] for x in range(len(config.feats_to_use))])
+    #         ax1 = plt.subplot(511)
+    #         ax1.set_title("Output Waveform", fontsize=10)
+    #         plt.plot(np.clip(output[i][:14000], -1.0,1.0))
+    #         ax1 = plt.subplot(512)
+    #         ax1.set_title("Output Waveform Bright", fontsize=10)
+    #         plt.plot(np.clip(output_bright[i][:14000], -1.0,1.0))
+    #         ax1 = plt.subplot(513)
+    #         ax1.set_title("Output Waveform Not Bright", fontsize=10)
+    #         plt.plot(np.clip(output_low[i][:14000], -1.0,1.0))
+    #         ax2 = plt.subplot(514)
+    #         ax2.set_title("Ground Truth Waveform", fontsize=10)
+    #         plt.plot(out_audios[i])
+    #         ax3 = plt.subplot(515)
+    #         ax3.set_title("Input Envelope", fontsize=10)
+    #         plt.plot(out_envelopes[i])
+
+    #         plt.show()
+    #         # synth = utils.query_yes_no("Synthesize output? ")
+
+
+    #         # if synth:
+
+    #         sf.write('./op_{}.wav'.format(i), np.clip(output[i][:14000], -1.0,1.0), config.fs)
+
+    #         sf.write('./op_{}_bright.wav'.format(i), np.clip(output_bright[i][:14000], -1.0,1.0), config.fs)
+    #         sf.write('./op_{}_low.wav'.format(i), np.clip(output_low[i][:14000], -1.0,1.0), config.fs)
+    #         # sf.write('./op0.1_{}.wav'.format(i), np.clip(output_1[i][:14000], -1.0,1.0), config.fs)
+    #         # sf.write('./op0.2_{}.wav'.format(i), np.clip(output_2[i][:14000], -1.0,1.0), config.fs)
+    #         # synth = utils.query_yes_no("Synthesize  Ground Truth? ")
+
+    #         # if synth:
+
+    #         sf.write('./gt_{}.wav'.format(i), out_audios[i], config.fs)
+    #     # ax4 = plt.subplot(414)
+    #     # ax4.set_title("Input Envelope", fontsize=10)
+    #     # plt.plot(out_masks[0])
             
-            import pdb;pdb.set_trace()
-
-
+    #         import pdb;pdb.set_trace()
 
 
 

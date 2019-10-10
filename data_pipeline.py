@@ -38,11 +38,13 @@ def gen_train_val():
 
 def data_gen(mode = 'Train'):
 
-    with h5py.File(config.feats_dir+'feats.hdf5', mode='r') as hdf5_file:
+    with h5py.File(config.feats_dir+'kick_feats.hdf5', mode='r') as hdf5_file:
         audios = hdf5_file["waveform"][()]
         envelope = hdf5_file["envelope"][()]
         mask = hdf5_file["mask"][()]
         features = hdf5_file["features"][()]
+
+    files_to_use = [x for x in os.listdir(config.wav_dir) if x.endswith('.wav') and not x.startswith('.')]
     # import pdb;pdb.set_trace()    
     
 
@@ -50,10 +52,14 @@ def data_gen(mode = 'Train'):
     envelope = np.delete(envelope, config.remove_indecis, axis=0)
     mask = np.delete(mask, config.remove_indecis, axis=0)
     features = np.delete(features, config.remove_indecis, axis=0)
+    files_to_use = np.delete(files_to_use, config.remove_indecis, axis=0)
+
 
     max_feats = features.max(axis = 0)
 
     train_split = int(len(audios)*config.train_split)
+
+    # import pdb;pdb.set_trace()
 
 
 
@@ -79,6 +85,7 @@ def data_gen(mode = 'Train'):
         out_masks = mask[indecis]
         out_features = features[indecis]/max_feats
         out_envelopes = np.array([x/(x+1e-12).max() for x in out_envelopes])
+        out_files = files_to_use[indecis]
 
 
         yield np.expand_dims(out_audios, -1), np.expand_dims(out_envelopes, -1), out_features, np.expand_dims(out_masks, -1)

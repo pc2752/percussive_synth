@@ -1,9 +1,10 @@
 import numpy as np
 import tensorflow as tf
 
-
 wav_dir = '../datasets/perc_synth_2/sounds-filtered-cut-normalized-downsampled/'
 ana_dir = '../datasets/perc_synth_2/analysis/'
+# wav_dir = '../datasets/perc_synth_2/processed_kicks/'
+# ana_dir = '../datasets/perc_synth_2/kicks_analysis/'
 
 mode = 'L1'
 
@@ -12,7 +13,7 @@ feats_dir = './feats/'
 if mode =='GAN':
 	log_dir = './log_GAN/'
 elif mode =='L1':
-	log_dir = './log_clean/'
+	log_dir = './log_kicks/'
 elif mode == 'Content':
 	log_dir = './log_content/'
 elif mode == 'Encode':
@@ -64,7 +65,7 @@ feats_to_use = ['brightness', 'hardness', 'depth', 'roughness', 'boominess', 'wa
 
 do_not_use = ['319832.wav', '255918.wav']
 
-
+# ssh -L 16006:127.0.0.1:6006 mirlab@mirlab-web1.s.upf.edu
 
 augment = True
 aug_prob = 0.5
@@ -75,8 +76,11 @@ pred_mode = 'all'
 # Hyperparameters
 num_epochs = 2500
 
-batches_per_epoch_train = 100
-batches_per_epoch_val = 10
+
+batches_per_epoch_train = 284
+batches_per_epoch_val = 31
+# batches_per_epoch_train = 576
+# batches_per_epoch_val = 64
 
 batch_size = 16
 samples_per_file = 4

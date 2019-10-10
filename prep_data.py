@@ -67,7 +67,7 @@ def main():
 	count = 0
 	do_not_use = []
 
-	with h5py.File(config.feats_dir+'feats.hdf5', mode='w') as hdf5_file:
+	with h5py.File(config.feats_dir+'kick_feats.hdf5', mode='w') as hdf5_file:
 		hdf5_file.create_dataset("waveform", [len(files_to_use), config.fs], np.float32)
 		hdf5_file.create_dataset("envelope", [len(files_to_use), config.fs], np.float32)
 		hdf5_file.create_dataset("mask", [len(files_to_use), config.fs], np.float32)
@@ -105,7 +105,7 @@ def main():
 				if any(elem is None for elem in features):
 					do_not_use.append(lf)
 				else:
-					with h5py.File(config.feats_dir+'feats.hdf5', mode='a') as hdf5_file:
+					with h5py.File(config.feats_dir+'kick_feats.hdf5', mode='a') as hdf5_file:
 						hdf5_file["waveform"][count,:] = audio
 						hdf5_file["envelope"][count,:] = envelope
 						hdf5_file["mask"][count,:] = mask
