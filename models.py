@@ -12,12 +12,24 @@ from random import randint
 import librosa
 import json
 # import sig_process
+from scipy import signal
 
 import soundfile as sf
 
 import matplotlib.pyplot as plt
 from scipy.ndimage import filters
 from tensorflow.python.saved_model.signature_def_utils_impl import predict_signature_def
+
+def butter_highpass(cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = signal.butter(order, normal_cutoff, btype='high', analog=False)
+    return b, a
+
+def butter_highpass_filter(data, cutoff, fs, order=5):
+    b, a = butter_highpass(cutoff, fs, order=order)
+    y = signal.filtfilt(b, a, data)
+    return y
 
 def cgm_crossentropy(y_true, y_pred):
     # assume y_pred is of size (batch_size,nframes,3*n), with y_pred(:,:,0:n)=mean, y_pred(:,:,n:2*n)=variance, y_pred(:,:,2*n:3*n)=value
@@ -462,7 +474,9 @@ class PercSynth(Model):
 
         # self.final_loss = cgm_crossentropy(tf.reshape(self.output_placeholder, [config.batch_size, -1, 1]), tf.reshape(self.output, [config.batch_size, -1, 4]))
         # self.final_loss = tf.losses.mean_squared_error(self.output,self.output_placeholder )
-        self.final_loss = tf.reduce_sum(tf.abs(self.output_placeholder- self.output) * self.input_placeholder)
+        self.output_stft = tf.abs(tf.contrib.signal.stft(tf.squeeze(self.output), 1024, 512))
+        self.output_stft_placeholder = tf.abs(tf.contrib.signal.stft(tf.squeeze(self.output_placeholder), 1024, 512))
+        self.final_loss = tf.reduce_sum(tf.abs(self.output_placeholder- self.output) * self.input_placeholder) + 0.5*tf.reduce_sum(tf.abs(self.output_stft_placeholder - self.output_stft)) 
         self.show_loss = (tf.abs(self.output_placeholder- self.output) * self.input_placeholder)
         # tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(labels= self.output_placeholder, logits = self.output)) 
         # tf.reduce_sum(tf.abs(self.input_placeholder- self.output))
@@ -634,8 +648,8 @@ class PercSynth(Model):
             output = output* out_envelopes
 
             for i in range(config.batch_size):
-                sf.write('./outputs/op_{}_{}.wav'.format(batch_num,i), np.clip(output[i], -1.0,1.0), config.fs)
-                sf.write('./outputs/gt_{}_{}.wav'.format(batch_num,i), out_audios[i], config.fs)
+                sf.write('./outputs_full/op_{}_{}.wav'.format(batch_num,i), np.clip(output[i], -1.0,1.0), config.fs)
+                sf.write('./outputs_full/gt_{}_{}.wav'.format(batch_num,i), out_audios[i], config.fs)
                 out_dict['op_{}_{}_.wav'.format(batch_num,i)] = out_files[i]
 
             for j, feat in enumerate(config.feats_to_use):
@@ -645,7 +659,7 @@ class PercSynth(Model):
                 output_low = sess.run(self.output, feed_dict=feed_dict)
                 output_low = output_low* out_envelopes
                 for i in range(config.batch_size):
-                    sf.write('./outputs/op_{}_{}_{}_low.wav'.format(batch_num, i, feat), np.clip(output_low[i], -1.0,1.0), config.fs)
+                    sf.write('./outputs_full/op_{}_{}_{}_low.wav'.format(batch_num, i, feat), np.clip(output_low[i], -1.0,1.0), config.fs)
 
                 feats_mid = np.copy(out_features)
                 feats_mid[:,j] = 0.5
@@ -653,7 +667,7 @@ class PercSynth(Model):
                 output_mid = sess.run(self.output, feed_dict=feed_dict)
                 output_mid = output_mid* out_envelopes
                 for i in range(config.batch_size):
-                    sf.write('./outputs/op_{}_{}_{}_mid.wav'.format(batch_num,i, feat), np.clip(output_mid[i], -1.0,1.0), config.fs)
+                    sf.write('./outputs_full/op_{}_{}_{}_mid.wav'.format(batch_num,i, feat), np.clip(output_mid[i], -1.0,1.0), config.fs)
 
 
                 feats_high = np.copy(out_features)
@@ -662,11 +676,11 @@ class PercSynth(Model):
                 output_high = sess.run(self.output, feed_dict=feed_dict)
                 output_high = output_high* out_envelopes
                 for i in range(config.batch_size):
-                    sf.write('./outputs/op_{}_{}_{}_high.wav'.format(batch_num,i, feat), np.clip(output_high[i], -1.0,1.0), config.fs)
+                    sf.write('./outputs_full/op_{}_{}_{}_high.wav'.format(batch_num,i, feat), np.clip(output_high[i], -1.0,1.0), config.fs)
                     
             batch_num+=1
             utils.progress(batch_num, config.batches_per_epoch_val, suffix='evaluation done')
-        with open('mapping.json', 'w') as fp:
+        with open('mapping_full.json', 'w') as fp:
             json.dump(out_dict, fp)
 
 
@@ -711,17 +725,17 @@ class PercSynth(Model):
 
     #     feed_dict = {self.input_placeholder: out_envelopes,self.output_placeholder: out_audios, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
     #     output, losses = sess.run([self.output, self.show_loss], feed_dict=feed_dict)
-    #     output = output* out_envelopes
+    #     output = output
 
-    #     out_features[:,4] = 0.2
+    #     out_features[:,0] = 0.2
 
 
 
     #     feed_dict = {self.input_placeholder: out_envelopes, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
     #     output_low = sess.run(self.output, feed_dict=feed_dict)
-    #     output_low = output_low * out_envelopes
+    #     output_low = output_low 
 
-    #     out_features[:,4] =  0.8
+    #     out_features[:,0] =  0.8
 
     #     feed_dict = {self.input_placeholder: out_envelopes, self.cond_placeholder: out_features, self.mask_placeholder:out_masks, self.is_train: False}
     #     output_bright = sess.run(self.output, feed_dict=feed_dict)        

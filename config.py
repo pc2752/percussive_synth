@@ -13,7 +13,7 @@ feats_dir = './feats/'
 if mode =='GAN':
 	log_dir = './log_GAN/'
 elif mode =='L1':
-	log_dir = './log_kicks/'
+	log_dir = './log_clean_full/'
 elif mode == 'Content':
 	log_dir = './log_content/'
 elif mode == 'Encode':
@@ -77,10 +77,10 @@ pred_mode = 'all'
 num_epochs = 2500
 
 
-batches_per_epoch_train = 284
-batches_per_epoch_val = 31
-# batches_per_epoch_train = 576
-# batches_per_epoch_val = 64
+# batches_per_epoch_train = 284
+# batches_per_epoch_val = 31
+batches_per_epoch_train = 576
+batches_per_epoch_val = 64
 
 batch_size = 16
 samples_per_file = 4
