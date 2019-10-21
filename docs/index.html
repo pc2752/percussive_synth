@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>WGANSing: A Multi-Voice Singing Voice Synthesizer Based on the Wasserstein-GAN</title>
+        <!-- <link rel="stylesheet" type="text/css" href="../../css/blog-web.css" media="all"> -->
+        <!-- <head> -->
+    <link type="text/css" rel="stylesheet" href="css/style.css" />
+    <style type="text/css">
+    audio { width: 200px; }
+    html {
+    position: relative;
+    min-width: 1024px;
+    min-height: 768px;
+    height: 100%;
+}
+    </style>
+    <!-- </head> -->
+    </head>
+    <body>
+    <center>
+    <div id="blog-wrapper">
+      <div id="blog-content">
+          <h2>Audio Examples of paper: WGANSing: A Multi-Voice Singing Voice Synthesizer Based on the Wasserstein-GAN</h2>
+          <h3>Pritish Chandna, Merlijn Blaauw, Jordi Bonada, Emilia Gómez</h3>
+          <h3>Music Technology Group, Universitat Pompeu Fabra, Barcelona</h3>
+    </center>
+
+
+
+  <h4>Examples From NUS-48E [1] Validation Set (The singers are non-native English Speakers)</h4>
+  <p> These are examples from the NUS-48E [1] dataset, on which the system was trained and evaluated</p>
+
+
+  <table>
+
+  <tr>
+    <td width="165px" style="padding-bottom: 40px;"></td>
+    <td width="150px"><b>Original Vocals, Re-synthesized using WORLD vocoder</b></td>
+    <td width="150px"><b>Vocals Synthesized Using WGANSing Model With L1 Loss</b></td>
+    <td width="150px"><b>Vocals Synthesized Using NPSS [2,3] Model</b></td>
+    <td width="150px"><b>Vocals Synthesized Using WGANSing Model Without L1 Loss</b></td>
+    <td width="150px"><b>Vocals Synthesized Using WGANSing Model With L1 Loss, With Voice Change</b></td>
+    <td width="150px"><b>Vocals Synthesized Using WGANSing Model With L1 Loss, With Voice and Gender Change</b></td>
+
+    
+
+  </tr>
+  <tr>
+    <td><b>Male Singing Voice</b></td>
+    <td>
+  <audio controls preload="none" >
+  <source src="audio/ori_male.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+
+    <td>
+  <audio controls preload="none">
+  <source src="audio/g_l1_male.mp3" type="audio/mp3">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+    <td>
+  <audio controls preload="none">
+  <source src="audio/npss_male.mp3" type="audio/mp3">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+  <td>
+  <audio controls preload="none">
+  <source src="audio/g_solo_male.mp3" type="audio/mp3">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+  <td>
+  <audio controls preload="none">
+  <source src="audio/g_vc_male.mp3" type="audio/mp3">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+    <td>
+  <audio controls preload="none">
+  <source src="audio/g_vc_m_f.mp3" type="audio/mp3">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+  </tr>
+
+</table>
+
+  <table>
+
+  <tr>
+    <td width="165px" style="padding-bottom: 40px;"></td>
+    <td width="150px"><b>Original Vocals, Re-synthesized using WORLD vocoder</b></td>
+    <td width="150px"><b>Vocals Synthesized Using WGANSing Model With L1 Loss</b></td>
+    <td width="150px"><b>Vocals Synthesized Using NPSS [2,3] Model</b></td>
+    <td width="150px"><b>Vocals Synthesized Using WGANSing Model Without L1 Loss</b></td>
+    <td width="150px"><b>Vocals Synthesized Using WGANSing Model With L1 Loss, With Voice Change</b></td>
+    <td width="150px"><b>Vocals Synthesized Using WGANSing Model With L1 Loss, With Voice and Gender Change</b></td>
+    
+
+  </tr>
+  <tr>
+    <td><b>Female Singing Voice</b></td>
+    <td>
+  <audio controls preload="none" >
+  <source src="audio/ori_female.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+
+    <td>
+  <audio controls preload="none">
+  <source src="audio/g_l1_female.mp3" type="audio/mp3">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+    <td>
+  <audio controls preload="none">
+  <source src="audio/npss_female.mp3" type="audio/mp3">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+  <td>
+  <audio controls preload="none">
+  <source src="audio/g_solo_female.mp3" type="audio/mp3">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+  <td>
+  <audio controls preload="none">
+  <source src="audio/g_vc_female.mp3" type="audio/mp3">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+   <td>
+  <audio controls preload="none">
+  <source src="audio/g_vc_f_m.mp3" type="audio/mp3">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+  </tr>
+
+</table>
+ <!--  <table>
+
+  <tr>
+
+    <td width="150px">   
+
+      <figure>
+
+      <div id="container" align="left">
+   <img src="images/SDR.png" alt="SDR" width="470" height="300"/> 
+   <figcaption>
+    The  SDR  metric  from  the  BSS  Eval  toolkit  for  the three systems to be compared.
+   </figcaption>
+    </figure>
+ </td>
+    <td width="150px"> 
+  
+   <img src="images/SAR.png" alt="SDR"  width="470" height="300" /> 
+   <figcaption>
+    The  SAR  metric  from  the  BSS  Eval  toolkit  for  the three systems to be compared.
+   </figcaption>
+     </div>         
+  </figure>
+  </tr>
+  <tr>
+    <td width="165px" style="padding-bottom: 40px;"></td>
+    <td width="150px">   
+
+      <figure>
+
+      <div id="container" align="left">
+   <img src="images/SIR.png" alt="SDR" width="470" height="300"/> 
+   <figcaption>
+    The SIR metric from the BSS Eval toolkit for the three systems to be compared.
+   </figcaption>
+    </figure>
+ </td>
+    <td width="150px"> 
+  
+   <img src="images/MCD.png" alt="SDR"  width="470" height="300" /> 
+   <figcaption>
+    The  Mel Cepstral Distrotion (MCD), in dB, for the three systems compared .
+   </figcaption>
+     </div>         
+  </figure>
+  </tr>
+
+</table> -->
+
+
+
+
+          <!-- <img src= alt="SDR"> -->
+
+          <!-- <img src="SAR.png" alt="SAR"> -->
+
+
+          <p>[1] Duan, Zhiyan, et al. "The NUS sung and spoken lyrics corpus: A quantitative comparison of singing and speech." 2013 Asia-Pacific Signal and Information Processing Association Annual Summit and Conference. IEEE, 2013.</p>
+          <p>[2] Blaauw, Merlijn, and Jordi Bonada. "A Neural Parametric Singing Synthesizer Modeling Timbre and Expression from Natural Songs." Applied Sciences 7.12 (2017): 1313.</p>
+          <p>[3] Blaauw, Merlijn, et al. “Data efficient voice cloning forneural  singing  synthesis,”  in2019  IEEE  International  Conference  onAcoustics, Speech and Signal Processing (ICASSP), 2019.</p>
+
+      </div>
+      
+      <div id="blog-bg-footer">
+        <div id="blog-footer">
+          <p>
+            Last updated:&nbsp;
+            <script language="JavaScript">
+            document.write(String(document.lastModified))</script>
+          </p>
+        </div>
+      </div>
+    </div>
+    </body>

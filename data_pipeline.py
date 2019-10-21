@@ -38,7 +38,7 @@ def gen_train_val():
 
 def data_gen(mode = 'Train'):
 
-    with h5py.File(config.feats_dir+'feats.hdf5', mode='r') as hdf5_file:
+    with h5py.File(config.feats_dir+'kick_feats.hdf5', mode='r') as hdf5_file:
         audios = hdf5_file["waveform"][()]
         envelope = hdf5_file["envelope"][()]
         mask = hdf5_file["mask"][()]
@@ -71,7 +71,7 @@ def data_gen(mode = 'Train'):
         in_indecis = np.arange(train_split, len(audios))
         batches_per_epoch = config.batches_per_epoch_val
 
-        random.shuffle(in_indecis)
+        # random.shuffle(in_indecis)
 
     for i, idx_batch in enumerate(range(batches_per_epoch)):
 
@@ -88,7 +88,7 @@ def data_gen(mode = 'Train'):
         out_files = files_to_use[indecis]
 
 
-        yield np.expand_dims(out_audios, -1), np.expand_dims(out_envelopes, -1), out_features, np.expand_dims(out_masks, -1), out_files
+        yield np.expand_dims(out_audios, -1), np.expand_dims(out_envelopes, -1), out_features, np.expand_dims(out_masks, -1)
 
 
 
@@ -108,7 +108,7 @@ def main():
     gen = data_gen('val')
     while True :
         start_time = time.time()
-        out_audios, out_envelopes, out_features, out_masks = next(gen)
+        out_audios, out_envelopes, out_features, out_masks, out_files = next(gen)
         print(time.time()-start_time)
 
     #     plt.subplot(411)
