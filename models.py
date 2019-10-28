@@ -686,7 +686,7 @@ class PercSynth(Model):
 
     def get_output(self, envelope, features, log_dir=config.log_dir):
         sess = tf.Session()
-        self.load_model(sess, log_dir = config.log_dir)
+        self.load_model(sess, log_dir = log_dir)
 
         envelope = np.repeat(envelope.reshape(1,-1), config.batch_size, 0).reshape(config.batch_size, -1, 1)
         features = np.repeat(features.reshape(1,-1), config.batch_size, 0)

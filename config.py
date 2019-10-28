@@ -13,7 +13,7 @@ feats_dir = './feats/'
 if mode =='GAN':
 	log_dir = './log_GAN/'
 elif mode =='L1':
-	log_dir = './log_ex/'
+	log_dir = './log_kicks_high/'
 elif mode == 'Content':
 	log_dir = './log_content/'
 elif mode == 'Encode':
