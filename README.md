@@ -7,7 +7,8 @@
 This repository contains the source code for NeuroDrum, a parametric percussion synthesis using the [Wave-U-Net](https://github.com/f90/Wave-U-Net) architecture. The syntheser is controlled using only high-level timbral characteristics: the envelope and the sounds hardness, depth, brightness, roughness, boominess, warmth and sharpness.
 
 <h3>Installation</h3>
-To install NeuroDrum and its dependencies, clone the repository and use <pre><code>pip install -r percussive_synth/requirements.txt </code></pre>
+To install NeuroDrum and its dependencies, clone the repository and use: 
+<pre><code>pip install -r percussive_synth/requirements.txt </code></pre>
 
 Then, you will have to download the [model weights](TODO) which you will link on the generation process. 
 
@@ -26,9 +27,9 @@ model = models.PercSynth()
 # Load one of the pre-trained models
 sess = model.load_sess(log_dir="/percussive_synth/log_free_full/")
 
-# Generate the sound, 
+# Generate the sound:
 # env should have 16000 elements from 0 to 1
-# parameters should be an array with values from 0 to 1 corresponding to each of the following features
+# parameters should be an array with values from 0 to 1 corresponding to each of the following features:
 # ['brightness', 'hardness', 'depth', 'roughness', 'boominess', 'warmth', 'sharpness']
 output = model.get_output(envelope, parameters , sess)
 sf.write('audio.wav', output, 16000)
