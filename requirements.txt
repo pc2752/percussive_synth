@@ -11,9 +11,7 @@ scipy
 
 SoundFile
 
-tensorboard==1.12.0
-tensorflow==1.12.0
-tensorflow-gpu==1.12.0
-tensorflow-tensorboard==1.5.1
+tensorboard
+tensorflow
 
 
