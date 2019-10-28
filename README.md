@@ -42,9 +42,8 @@ Perform the analysis of the dataset using the [ac-audio-extractor](https://githu
 
 Prepare the data for use, set the `wav_dir` and the `ana_dir` in the [config.py](config.py) and run [prep_data.py](prep_data.py).
 
-Once setup, you can run the following commands. 
-To train the model: 
-<pre><code>python main.py -t</code></pre>. 
+Once setup, you can run the following command to train the model: 
+<pre><code>python main.py -t</code></pre>
 
 To generate examples from the validation set from the command line, the following command can be used:
 
