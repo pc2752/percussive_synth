@@ -1,24 +1,40 @@
-<h1>Semantic Drum Machine</h1>
+<h1>NeuroDrum</h1>
 
-<h2>Antonio Banderas, Pritish Chandna, Xavier Favory, Emilia Gomez, Xavier Serra</h2>
+<h4>António Ramires, Pritish Chandna, Xavier Favory, Emilia Gomez, Xavier Serra</h2>
 
-<h2>Music Technology Group, Universitat Pompeu Fabra, Barcelona</h2>
+<h4>Music Technology Group, Universitat Pompeu Fabra, Barcelona</h2>
 
-This repository contains the source code for parametric percussion synthesis.
+This repository contains the source code for NeuroDrum, a parametric percussion synthesis using the [Wave-U-Net](https://github.com/f90/Wave-U-Net) architecture. The syntheser is controlled using only high-level timbral characteristics: the envelope and the sounds hardness, depth, brightness, roughness, boominess, warmth and sharpness.
+
 <h3>Installation</h3>
-To install, clone the repository and use <pre><code>pip install -r requirements.txt </code></pre> to install the packages required.
+To install NeuroDrum and its dependencies, clone the repository and use <pre><code>pip install -r percussive_synth/requirements.txt </code></pre>
 
- The main code is in the *main.py* file.  
- 
+Then, you will have to download the [model weights](TODO) which you will link on the generation process. 
 
+<h3>Generation</h3>
 
+Sounds can be generated from the command line, or within Python. 
 
+To generate from the command line, the following commands should be ran:
 
-<h3>Training and inference</h3>
+The following example shows how to generate and save a sound from NeuroDrum
+```python
+# Import the models module and create an instance of it, this part should only be ran once
+import models
+model = models.PercSynth()
 
-To use the WGANSing, you will have to download the <a href="https://drive.google.com/file/d/1Mmg3cq5CYl-yOePHhiFWInizlr3tMPEE/view?usp=sharing" rel="nofollow"> model weights</a> and place it in the *log_dir* directory, defined in *config.py*. 
+# Load one of the pre-trained models
+sess = model.load_sess(log_dir="/percussive_synth/log_free_full/")
 
-The NUS-48E dataset can be downloaded from <a href="https://www.smcnus.org/nus-48e-sung-and-spoken-lyrics-corpus/" rel="nofollow"> here</a>. Once downloaded, please change *wav_dir_nus* in *config.py* to the same directory that the dataset is in. 
+# Generate the sound, 
+# env should have 16000 elements from 0 to 1
+# parameters should be an array with values from 0 to 1 corresponding to each of the following features
+# ['brightness', 'hardness', 'depth', 'roughness', 'boominess', 'warmth', 'sharpness']
+output = model.get_output(envelope, parameters , sess)
+sf.write('audio.wav', output, 16000)
+```
+
+<h3>Training</h3>
 
 To prepare the data for use, please use *prep_data_nus.py*.
 
@@ -36,7 +52,6 @@ You will also be prompted on wether plots showed be displayed or not, press *y* 
 
 
 <h2>Acknowledgments</h2>
-The TITANX used for this research was donated by the NVIDIA Corporation. This work is partially supported by the Towards Richer Online Music Public-domain Archives <a href="https://trompamusic.eu/" rel="nofollow">(TROMPA)</a> (H2020 770376) European project.
-          <p>[1] Duan, Zhiyan, et al. "The NUS sung and spoken lyrics corpus: A quantitative comparison of singing and speech." 2013 Asia-Pacific Signal and Information Processing Association Annual Summit and Conference. IEEE, 2013.</p>
-          <p>[2] Blaauw, Merlijn, and Jordi Bonada. "A Neural Parametric Singing Synthesizer Modeling Timbre and Expression from Natural Songs." Applied Sciences 7.12 (2017): 1313.</p>
-          <p>[3] Blaauw, Merlijn, et al. “Data efficient voice cloning forneural  singing  synthesis,”  in2019  IEEE  International  Conference  onAcoustics, Speech and Signal Processing (ICASSP), 2019.</p>
+This work is partially funded by the European Union’s Horizon 2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No765068, MIP-Frontiers.
+This work is partially supported by the Towards Richer Online Music Public-domain Archives <a href="https://trompamusic.eu/" rel="nofollow">(TROMPA)</a> (H2020 770376) European project.
+The TITANX used for this research was donated by the NVIDIA Corporation. 
