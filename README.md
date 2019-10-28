@@ -14,9 +14,7 @@ Then, you will have to download the [model weights](TODO) which you will link on
 
 <h3>Generation</h3>
 
-Sounds can be generated from the command line, or within Python. 
-
-To generate from the command line, the following commands should be ran:
+Sounds can be generated within Python. 
 
 The following example shows how to generate and save a sound from NeuroDrum
 ```python
@@ -37,22 +35,25 @@ sf.write('audio.wav', output, 16000)
 
 <h3>Training</h3>
 
-To prepare the data for use, please use *prep_data_nus.py*.
+If you would like to train a model with a private dataset, the following steps should be taken:
 
+The sounds should be in 16kHz sample rate and be cut or padded to have 1 second of length.
+Perform the analysis of the dataset using the [ac-audio-extractor](https://github.com/AudioCommons/ac-audio-extractor).
+
+Prepare the data for use, set the `wav_dir` and the `ana_dir` in the [config.py](config.py) and run [prep_data.py](prep_data.py).
 
 Once setup, you can run the following commands. 
 To train the model: 
 <pre><code>python main.py -t</code></pre>. 
-To synthesize a .lab file:
-Use <pre><code>python main.py -e <i>filename</i> <i>alternate_singer_name</i> </code></pre> 
 
-If no alternate singer is given then the original singer will be used for synthesis. A list of valid singer names will be displayed if an invalid singer is entered. 
+To generate examples from the validation set from the command line, the following command can be used:
 
-You will also be prompted on wether plots showed be displayed or not, press *y* or *Y* to view plots.
-
+```
+python main.py -e
+```
 
 
 <h2>Acknowledgments</h2>
-This work is partially funded by the European Union’s Horizon 2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No765068, MIP-Frontiers.
+This work is partially funded by the European Union’s Horizon 2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No765068, [MIP-Frontiers](https://mip-frontiers.eu/).
 This work is partially supported by the Towards Richer Online Music Public-domain Archives <a href="https://trompamusic.eu/" rel="nofollow">(TROMPA)</a> (H2020 770376) European project.
 The TITANX used for this research was donated by the NVIDIA Corporation. 
