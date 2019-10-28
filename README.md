@@ -53,7 +53,7 @@ python main.py -e
 
 
 <h2>Acknowledgments</h2>
-This work is partially funded by the European Union’s Horizon 2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No765068, [MIP-Frontiers](https://mip-frontiers.eu).
+This work is partially funded by the European Union’s Horizon 2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No765068, [MIP-Frontiers]('https://mip-frontiers.eu').
 
 This work is partially supported by the Towards Richer Online Music Public-domain Archives <a href="https://trompamusic.eu/" rel="nofollow">(TROMPA)</a> (H2020 770376) European project.
 
