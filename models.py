@@ -689,8 +689,8 @@ class PercSynth(Model):
         self.load_model(sess, log_dir = log_dir)
         return sess
 
-    def get_output(self, envelope, features):
-        sess = self.load_sess()
+    def get_output(self, envelope, features, sess):
+
         envelope = np.repeat(envelope.reshape(1,-1), config.batch_size, 0).reshape(config.batch_size, -1, 1)
         features = np.repeat(features.reshape(1,-1), config.batch_size, 0)
         feed_dict = {self.input_placeholder: envelope,self.cond_placeholder: features,  self.is_train: False}
