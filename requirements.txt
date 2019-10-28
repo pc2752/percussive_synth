@@ -1,16 +1,13 @@
 
-h5py==2.7.0
+h5py
 
-librosa==0.6.2
+librosa
 
-mir-eval==0.4
+mir-eval
 
-numpy==1.15.4
-pandas==0.20.3
-
--e git+https://github.com/JeremyCCHsu/Python-Wrapper-for-World-Vocoder.git@a34a99980fc82825c0f2b616ea85069a4411cc94#egg=pyworld
-
-scipy==1.1.0
+numpy
+pandas
+scipy
 
 SoundFile
 
