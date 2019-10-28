@@ -7,38 +7,38 @@ import numpy as np
 from scipy.stats import norm
 import pyworld as pw
 import matplotlib.pyplot as plt
-from reduce import sp_to_mfsc, mfsc_to_sp, ap_to_wbap,wbap_to_ap, get_warped_freqs, sp_to_mgc, mgc_to_sp, mgc_to_mfsc, mfsc_to_mgc
-from vocoder import extract_sp_world, extract_ap_world, gen_wave_world
-from acoufe import pitch
+# from reduce import sp_to_mfsc, mfsc_to_sp, ap_to_wbap,wbap_to_ap, get_warped_freqs, sp_to_mgc, mgc_to_sp, mgc_to_mfsc, mfsc_to_mgc
+# from vocoder import extract_sp_world, extract_ap_world, gen_wave_world
+# from acoufe import pitch
 import librosa
-from tqdm import tqdm
+# from tqdm import tqdm
 
 import config
 
 
-def griffinlim(spectrogram, n_iter = 50, window = 'hann', n_fft = 1024, hop_length = -1, verbose = False):
-    if hop_length == -1:
-        hop_length = n_fft // 4
+# def griffinlim(spectrogram, n_iter = 50, window = 'hann', n_fft = 1024, hop_length = -1, verbose = False):
+#     if hop_length == -1:
+#         hop_length = n_fft // 4
 
-    angles = np.exp(2j * np.pi * np.random.rand(*spectrogram.shape))
+#     angles = np.exp(2j * np.pi * np.random.rand(*spectrogram.shape))
 
-    t = tqdm(range(n_iter), ncols=100, mininterval=2.0, disable=not verbose)
-    for i in t:
-        # full = np.abs(spectrogram).astype(np.complex) * angles
-        inverse = istft(spectrogram,angles)
-        rebuilt = stft(inverse)[:spectrogram.shape[0],:]
-        angles = np.exp(1j * np.angle(rebuilt))
-        progress(i,n_iter)
-        # import pdb;pdb.set_trace()
+#     t = tqdm(range(n_iter), ncols=100, mininterval=2.0, disable=not verbose)
+#     for i in t:
+#         # full = np.abs(spectrogram).astype(np.complex) * angles
+#         inverse = istft(spectrogram,angles)
+#         rebuilt = stft(inverse)[:spectrogram.shape[0],:]
+#         angles = np.exp(1j * np.angle(rebuilt))
+#         progress(i,n_iter)
+#         # import pdb;pdb.set_trace()
 
-        if verbose:
-            diff = np.abs(spectrogram) - np.abs(rebuilt)
-            t.set_postfix(loss=np.linalg.norm(diff, 'fro'))
+#         if verbose:
+#             diff = np.abs(spectrogram) - np.abs(rebuilt)
+#             t.set_postfix(loss=np.linalg.norm(diff, 'fro'))
 
-    # full = np.abs(spectrogram).astype(np.complex) * angles
-    inverse = istft(spectrogram, angles)
+#     # full = np.abs(spectrogram).astype(np.complex) * angles
+#     inverse = istft(spectrogram, angles)
 
-    return inverse
+#     return inverse
 
 
 def shuffle_two(a,b):
