@@ -5,7 +5,7 @@ import csv
 import soundfile as sf
 import numpy as np
 from scipy.stats import norm
-import pyworld as pw
+# import pyworld as pw
 import matplotlib.pyplot as plt
 # from reduce import sp_to_mfsc, mfsc_to_sp, ap_to_wbap,wbap_to_ap, get_warped_freqs, sp_to_mgc, mgc_to_sp, mgc_to_mfsc, mfsc_to_mgc
 # from vocoder import extract_sp_world, extract_ap_world, gen_wave_world
