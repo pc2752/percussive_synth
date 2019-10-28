@@ -835,6 +835,7 @@ class PercSynth(Model):
         """
 
         with tf.variable_scope('NPSS') as scope:
+            scope.reuse_variables()
             self.output = modules.full_network(self.cond_placeholder,self.input_placeholder,  self.is_train)
 
 class PercSynthEncode(Model):
