@@ -684,6 +684,16 @@ class PercSynth(Model):
     #         json.dump(out_dict, fp)
 
 
+    def get_output(self, envelope, features, log_dir=config.log_dir):
+        sess = tf.Session()
+        self.load_model(sess, log_dir = config.log_dir)
+
+        envelope = np.repeat(envelope.reshape(1,-1), config.batch_size, 0).reshape(config.batch_size, -1, 1)
+        features = np.repeat(features.reshape(1,-1), config.batch_size, 0)
+        feed_dict = {self.input_placeholder: envelope,self.cond_placeholder: features,  self.is_train: False}
+        output_full = sess.run(self.output, feed_dict=feed_dict)
+        output = output_full[0]
+        return output
 
     def test_model(self):
         sess = tf.Session()
@@ -1401,8 +1411,10 @@ def test():
     # # model.test_file('nino_4424.hdf5')
     # model.test_wav_folder('./helena_test_set/', './results/')
 
-    model = MultiSynth()
-    model.train()
+    model = PercSynth()
+
+    output = model.get_output(np.random.rand(16000), np.random.rand(7))
+    import pdb;pdb.set_trace()
 
 if __name__ == '__main__':
     test()
