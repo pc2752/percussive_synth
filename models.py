@@ -684,7 +684,7 @@ class PercSynth(Model):
     #         json.dump(out_dict, fp)
 
 
-    def load_sess(self, log_dir=config.log_dir)
+    def load_sess(self, log_dir=config.log_dir):
         sess = tf.Session()
         self.load_model(sess, log_dir = log_dir)
         return sess
