@@ -60,6 +60,7 @@ def callback(model_name, attack, release, brightness, hardness, depth, roughness
     #print(model_name, attack, release, brightness, hardness, depth, roughness, boominess, warmth, sharpness)
     global CURRENT_MODEL_NAME
     global sess
+    global model
 
     if model_name != CURRENT_MODEL_NAME:
         sess = model.load_sess(log_dir="models/{}".format(model_name))
