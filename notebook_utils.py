@@ -56,31 +56,6 @@ model_widgets_params = {
 CURRENT_MODEL_NAME = DEFAULT_MODEL
 
 
-def callback(model_name, attack, release, brightness, hardness, depth, roughness, boominess, warmth, sharpness, model, sess):
-    #print(model_name, attack, release, brightness, hardness, depth, roughness, boominess, warmth, sharpness)
-    global CURRENT_MODEL_NAME
-
-    if model_name != CURRENT_MODEL_NAME:
-        sess = model.load_sess(log_dir="models/{}".format(model_name))
-        CURRENT_MODEL_NAME = model_name
-    
-    env = generate_envelope(attack, release, sr=16000)
-    params = np.array([brightness, hardness, depth, roughness, boominess, warmth, sharpness])
-    
-    output = model.get_output(env, params , sess)
-
-    output = output[:15000]
-    env = env[:15000]
-    sf.write('audio.wav', output, 16000)
-    data, sr = sf.read('audio.wav')
-    display(Audio(data, rate=sr))
-
-    plt.subplot(211)
-    plt.plot(data)
-    plt.subplot(212)
-    plt.plot(env)
-
-
 def generate_envelope(attack, release, sr=16000):
     envelope = []
     if attack + release <= 1 :
@@ -90,7 +65,7 @@ def generate_envelope(attack, release, sr=16000):
     return result
 
 
-def return_widgets(model, sess):
+def return_widgets(callback):
     model_name = widgets.Dropdown(**model_widgets_params)
     attack = widgets.FloatSlider(**attack_widgets_params)
     release = widgets.FloatSlider(**release_widgets_params)
@@ -102,7 +77,7 @@ def return_widgets(model, sess):
     warmth = widgets.FloatSlider(description='Warmth', value=random(), **default_widgets_params)
     sharpness = widgets.FloatSlider(description='Sharpness', value=random(), **default_widgets_params)
 
-    out = widgets.interactive_output(lambda model_name, attack, release, brightness, hardness, depth, roughness, boominess, warmth, sharpness: callback(model_name, attack, release, brightness, hardness, depth, roughness, boominess, warmth, sharpness, model, sess), {
+    out = widgets.interactive_output(callback, {
         'model_name': model_name,
         'attack': attack,
         'release': release,
