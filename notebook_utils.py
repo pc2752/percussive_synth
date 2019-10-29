@@ -56,11 +56,9 @@ model_widgets_params = {
 CURRENT_MODEL_NAME = DEFAULT_MODEL
 
 
-def callback(model_name, attack, release, brightness, hardness, depth, roughness, boominess, warmth, sharpness):
+def callback(model_name, attack, release, brightness, hardness, depth, roughness, boominess, warmth, sharpness, model, sess):
     #print(model_name, attack, release, brightness, hardness, depth, roughness, boominess, warmth, sharpness)
     global CURRENT_MODEL_NAME
-    global sess
-    global model
 
     if model_name != CURRENT_MODEL_NAME:
         sess = model.load_sess(log_dir="models/{}".format(model_name))
@@ -86,13 +84,13 @@ def callback(model_name, attack, release, brightness, hardness, depth, roughness
 def generate_envelope(attack, release, sr=16000):
     envelope = []
     if attack + release <= 1 :
-        envelope = np.concatenate((np.linspace(0,1,attack*sr),np.linspace(1,0,release*sr)))
+        envelope = np.concatenate((np.linspace(0, 1, attack*sr), np.linspace(1, 0, release*sr)))
         result = np.zeros(16000)
         result[:len(envelope)] =  envelope
     return result
 
 
-def return_widgets():
+def return_widgets(model, sess):
     model_name = widgets.Dropdown(**model_widgets_params)
     attack = widgets.FloatSlider(**attack_widgets_params)
     release = widgets.FloatSlider(**release_widgets_params)
@@ -104,7 +102,7 @@ def return_widgets():
     warmth = widgets.FloatSlider(description='Warmth', value=random(), **default_widgets_params)
     sharpness = widgets.FloatSlider(description='Sharpness', value=random(), **default_widgets_params)
 
-    out = widgets.interactive_output(callback, {
+    out = widgets.interactive_output(lambda control: callback(model=model, sess=sess, **control), {
         'model_name': model_name,
         'attack': attack,
         'release': release,
