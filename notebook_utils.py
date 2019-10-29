@@ -102,7 +102,7 @@ def return_widgets(model, sess):
     warmth = widgets.FloatSlider(description='Warmth', value=random(), **default_widgets_params)
     sharpness = widgets.FloatSlider(description='Sharpness', value=random(), **default_widgets_params)
 
-    out = widgets.interactive_output(lambda control: callback(model=model, sess=sess, **control), {
+    out = widgets.interactive_output(lambda model_name, attack, release, brightness, hardness, depth, roughness, boominess, warmth, sharpness: callback(model_name, attack, release, brightness, hardness, depth, roughness, boominess, warmth, sharpness, model, sess), {
         'model_name': model_name,
         'attack': attack,
         'release': release,
