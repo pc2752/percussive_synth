@@ -10,7 +10,7 @@ This repository contains the source code for NeuroDrum, a parametric percussion 
 To install NeuroDrum and its dependencies, clone the repository and use: 
 <pre><code>pip install -r percussive_synth/requirements.txt </code></pre>
 
-Then, you will have to download the [model weights](TODO) which you will link on the generation process. 
+Then, you will have to download the [model weights](https://drive.google.com/drive/folders/17UqC3jV6eULVNoanSKAMVAYJ9UYfJy2N?usp=sharing) which you will link on the generation process. 
 
 <h3>Generation</h3>
 
