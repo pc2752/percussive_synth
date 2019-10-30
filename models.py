@@ -734,7 +734,7 @@ class PercSynth(Model):
         count_batch = 0
         for out_audios, out_envelopes, out_features, out_masks in val_generator: 
 
-            if count_batch in [1,2,3,4,5,6]:
+            if count_batch in [0,1,2,3,4,5]:
 
                 bobo = np.copy(out_features)
 
@@ -769,8 +769,8 @@ class PercSynth(Model):
                 # output_low = output_low * out_envelopes
 
                 for i in range(config.batch_size):
-                    if "{}_{}".format(count_batch, i) in ["3_3", "1_14", "2_2", "3_10", "4_5", "1_2", "2_5", "5_6", "6_6", "6_10", "2_13", "3_12", "4_2", "5_8", "5_15" ]:
-                    # if "{}_{}".format(count_batch, i) in ["0_11", "0_15", "1_1", "1_5", "1_11", "1_13", "2_5", "2_11", "2_12", "3_1", "3_6", "3_9", "3_10", "4_7", "5_0"]:
+                    # if "{}_{}".format(count_batch, i) in ["3_3", "1_14", "2_2", "3_10", "4_5", "1_2", "2_5", "5_6", "6_6", "6_10", "2_13", "3_12", "4_2", "5_8", "5_15" ]:
+                    if "{}_{}".format(count_batch, i) in ["0_11", "0_15", "1_1", "1_5", "1_11", "1_13", "2_5", "2_11", "2_12", "3_1", "3_6", "3_9", "3_10", "4_7", "5_0"]:
 
                         # print("Loss: {}".format(np.mean(losses[i])))
                         # print([str(bobo[i][x])+":"+config.feats_to_use[x] for x in range(len(config.feats_to_use))])
@@ -812,7 +812,7 @@ class PercSynth(Model):
                         ax5.set_xticklabels([])
                         ax5.set_yticklabels([])
                         plt.plot(np.clip(output_high[i][:6000], -1.0,1.0))
-                        plt.savefig('./docs/demo_free/img_{}_{}.png'.format(count_batch, i))
+                        plt.savefig('./docs/demo_kicks/img_{}_{}.png'.format(count_batch, i))
                         # synth = utils.query_yes_no("Synthesize output? ")
 
 

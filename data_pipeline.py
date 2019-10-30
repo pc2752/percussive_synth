@@ -38,7 +38,7 @@ def gen_train_val():
 
 def data_gen(mode = 'Train'):
 
-    with h5py.File(config.feats_dir+'feats.hdf5', mode='r') as hdf5_file:
+    with h5py.File(config.feats_dir+'kick_feats.hdf5', mode='r') as hdf5_file:
         audios = hdf5_file["waveform"][()]
         envelope = hdf5_file["envelope"][()]
         mask = hdf5_file["mask"][()]
