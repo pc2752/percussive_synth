@@ -4,7 +4,7 @@
 
 <h4>Music Technology Group, Universitat Pompeu Fabra, Barcelona</h2>
 
-This repository contains the source code for NeuroDrum, a parametric percussion synthesis using the [Wave-U-Net](https://github.com/f90/Wave-U-Net) architecture. The syntheser is controlled using only high-level timbral characteristics: the envelope and the sounds hardness, depth, brightness, roughness, boominess, warmth and sharpness. An interactive example of this synthesiser is available [here](TODO) and a selected set of sound examples [here](TODO).
+This repository contains the source code for NeuroDrum, a parametric percussion synthesis using the [Wave-U-Net](https://github.com/f90/Wave-U-Net) architecture. The syntheser is controlled using only high-level timbral characteristics: the envelope and the sounds hardness, depth, brightness, roughness, boominess, warmth and sharpness. An interactive example of this synthesiser is available [here](https://colab.research.google.com/drive/1NHZjbzBNNg_5F3xZbuLXlxRt5k-aFnwf) and a selected set of sound examples [here](TODO).
 
 <h3>Installation</h3>
 To install NeuroDrum and its dependencies, clone the repository and use: 
