@@ -8,7 +8,7 @@ This repository contains the source code for NeuroDrum, a parametric percussion 
 
 #### Interactive demo available as a [Google Colab Notebook](https://colab.research.google.com/drive/1NHZjbzBNNg_5F3xZbuLXlxRt5k-aFnwf).
 
-#### Selected sound examples available at the [website](TODO).
+#### Selected sound examples available at the [website](https://pc2752.github.io/percussive_synth/).
 
 <h3>Installation</h3>
 To install NeuroDrum and its dependencies, clone the repository and use: 
