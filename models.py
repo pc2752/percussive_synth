@@ -734,7 +734,7 @@ class PercSynth(Model):
         count_batch = 0
         for out_audios, out_envelopes, out_features, out_masks in val_generator: 
 
-            if count_batch in [0,1,2,3,4,5]:
+            if count_batch in [1,2,3,4,5,6]:
 
                 bobo = np.copy(out_features)
 
@@ -769,66 +769,69 @@ class PercSynth(Model):
                 # output_low = output_low * out_envelopes
 
                 for i in range(config.batch_size):
-                    if "{}_{}".format(count_batch, i) in ["0_11", "0_15", "1_1", "1_5", "1_11", "1_13", "2_5", "2_11", "2_12", "3_1", "3_6", "3_9", "3_10", "4_7", "5_0"]:
-                        # # print("Loss: {}".format(np.mean(losses[i])))
-                        # # print([str(bobo[i][x])+":"+config.feats_to_use[x] for x in range(len(config.feats_to_use))])
-                        # plt.subplots_adjust(hspace = 0.3, wspace=0.05)
-                        # ax1 = plt.subplot(233)
-                        # ax1.set_title("Input Envelope", fontsize=15)
+                    if "{}_{}".format(count_batch, i) in ["3_3", "1_14", "2_2", "3_10", "4_5", "1_2", "2_5", "5_6", "6_6", "6_10", "2_13", "3_12", "4_2", "5_8", "5_15" ]:
+                    # if "{}_{}".format(count_batch, i) in ["0_11", "0_15", "1_1", "1_5", "1_11", "1_13", "2_5", "2_11", "2_12", "3_1", "3_6", "3_9", "3_10", "4_7", "5_0"]:
+
+                        # print("Loss: {}".format(np.mean(losses[i])))
+                        # print([str(bobo[i][x])+":"+config.feats_to_use[x] for x in range(len(config.feats_to_use))])
+                        plt.figure(figsize=(20,10))
+                        plt.subplots_adjust(hspace = 0.3, wspace=0.05)
+                        ax1 = plt.subplot(233)
+                        ax1.set_title("Input Envelope", fontsize=15)
+                        ax1.set_xticklabels([])
+                        ax1.set_yticklabels([])
+                        plt.plot(out_envelopes[i][:6000])
+                        ax1 = plt.subplot(232)
+                        ax1.set_title("Input Timbral Features", fontsize=15)
+                        ax1.set_xticklabels([])
+                        ax1.set_yticklabels([])
+                        ax1.barh(np.arange(len(config.feats_to_use)), out_features[i], align='center')
                         # ax1.set_xticklabels([])
+                        # ax1.set_yticklabels(['']+config.feats_to_use)
                         # ax1.set_yticklabels([])
-                        # plt.plot(out_envelopes[i][:6000])
-                        # ax1 = plt.subplot(232)
-                        # ax1.set_title("Input Timbral Features", fontsize=15)
-                        # ax1.set_xticklabels([])
-                        # ax1.set_yticklabels([])
-                        # ax1.barh(np.arange(len(config.feats_to_use)), out_features[i], align='center')
-                        # # ax1.set_xticklabels([])
-                        # # ax1.set_yticklabels(['']+config.feats_to_use)
-                        # # ax1.set_yticklabels([])
-                        # # plt.imshow(feats[i][:6000], origin='lower', aspect='auto')
+                        # plt.imshow(feats[i][:6000], origin='lower', aspect='auto')
                         
 
-                        # ax2 = plt.subplot(231)
-                        # ax2.set_title("Ground Truth Waveform", fontsize=15)
-                        # ax2.set_xticklabels([])
-                        # ax2.set_yticklabels([])
-                        # plt.plot(out_audios[i][:6000])
-                        # ax3 = plt.subplot(234)
-                        # ax3.set_title("Output Waveform WAVE", fontsize=15)
-                        # ax3.set_xticklabels([])
-                        # ax3.set_yticklabels([])
-                        # plt.plot(np.clip(output_wave[i][:6000], -1.0,1.0))
-                        # ax4 = plt.subplot(235)
-                        # ax4.set_title("Output Waveform FULL", fontsize=15)
-                        # ax4.set_xticklabels([])
-                        # ax4.set_yticklabels([])
-                        # plt.plot(np.clip(output_full[i][:6000], -1.0,1.0))
-                        # ax5 = plt.subplot(236)
-                        # ax5.set_title("Output Waveform HIGH", fontsize=15)
-                        # ax5.set_xticklabels([])
-                        # ax5.set_yticklabels([])
-                        # plt.plot(np.clip(output_high[i][:6000], -1.0,1.0))
-                        # plt.show()
-                        # # synth = utils.query_yes_no("Synthesize output? ")
+                        ax2 = plt.subplot(231)
+                        ax2.set_title("Ground Truth Waveform", fontsize=15)
+                        ax2.set_xticklabels([])
+                        ax2.set_yticklabels([])
+                        plt.plot(out_audios[i][:6000])
+                        ax3 = plt.subplot(234)
+                        ax3.set_title("Output Waveform WAVE", fontsize=15)
+                        ax3.set_xticklabels([])
+                        ax3.set_yticklabels([])
+                        plt.plot(np.clip(output_wave[i][:6000], -1.0,1.0))
+                        ax4 = plt.subplot(235)
+                        ax4.set_title("Output Waveform FULL", fontsize=15)
+                        ax4.set_xticklabels([])
+                        ax4.set_yticklabels([])
+                        plt.plot(np.clip(output_full[i][:6000], -1.0,1.0))
+                        ax5 = plt.subplot(236)
+                        ax5.set_title("Output Waveform HIGH", fontsize=15)
+                        ax5.set_xticklabels([])
+                        ax5.set_yticklabels([])
+                        plt.plot(np.clip(output_high[i][:6000], -1.0,1.0))
+                        plt.savefig('./docs/demo_free/img_{}_{}.png'.format(count_batch, i))
+                        # synth = utils.query_yes_no("Synthesize output? ")
 
 
-                        # # if synth:
+                        # if synth:
 
-                        # # sf.write('./op_{}.wav'.format(i), np.clip(output[i][:14000], -1.0,1.0), config.fs)
+                        # sf.write('./op_{}.wav'.format(i), np.clip(output[i][:14000], -1.0,1.0), config.fs)
 
-                        # # sf.write('./op_{}_bright.wav'.format(i), np.clip(output_bright[i][:14000], -1.0,1.0), config.fs)
-                        # # sf.write('./op_{}_low.wav'.format(i), np.clip(output_low[i][:14000], -1.0,1.0), config.fs)
-                        # # sf.write('./op0.1_{}.wav'.format(i), np.clip(output_1[i][:14000], -1.0,1.0), config.fs)
-                        # # sf.write('./op0.2_{}.wav'.format(i), np.clip(output_2[i][:14000], -1.0,1.0), config.fs)
-                        # # synth = utils.query_yes_no("Synthesize  Ground Truth? ")
+                        # sf.write('./op_{}_bright.wav'.format(i), np.clip(output_bright[i][:14000], -1.0,1.0), config.fs)
+                        # sf.write('./op_{}_low.wav'.format(i), np.clip(output_low[i][:14000], -1.0,1.0), config.fs)
+                        # sf.write('./op0.1_{}.wav'.format(i), np.clip(output_1[i][:14000], -1.0,1.0), config.fs)
+                        # sf.write('./op0.2_{}.wav'.format(i), np.clip(output_2[i][:14000], -1.0,1.0), config.fs)
+                        # synth = utils.query_yes_no("Synthesize  Ground Truth? ")
 
-                        # # if synth:
+                        # if synth:
 
-                        sf.write('./demo_kicks/gt_{}_{}.wav'.format(count_batch, i), out_audios[i], config.fs)
-                        sf.write('./demo_kicks/op_WAVE_{}_{}.wav'.format(count_batch, i), output_wave[i], config.fs)
-                        sf.write('./demo_kicks/op_FULL_{}_{}.wav'.format(count_batch, i), output_full[i], config.fs)
-                        sf.write('./demo_kicks/op_HIGH_{}_{}.wav'.format(count_batch, i), output_high[i], config.fs)
+                        # sf.write('./demo_free/gt_{}_{}.wav'.format(count_batch, i), out_audios[i], config.fs)
+                        # sf.write('./demo_free/op_WAVE_{}_{}.wav'.format(count_batch, i), output_wave[i], config.fs)
+                        # sf.write('./demo_free/op_FULL_{}_{}.wav'.format(count_batch, i), output_full[i], config.fs)
+                        # sf.write('./demo_free/op_HIGH_{}_{}.wav'.format(count_batch, i), output_high[i], config.fs)
                     # ax4 = plt.subplot(414)
                     # ax4.set_title("Input Envelope", fontsize=10)
                     # plt.plot(out_masks[0])

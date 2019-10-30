@@ -1,10 +1,32 @@
 
 
 
+img{
+   display: none
+}
 
+p.one:hover + img{ //img is a sibling
+   display: block;
+}
 
+p.two:hover img{ //image is a child
+   display: block;
+}
+
+.container {
+  display: inline-block;
+}
+.manImg {
+  display: none;
+}
+.hover-text:hover ~ .manImg {
+  display: block;  
+}
 
 <!DOCTYPE html>
+
+
+
 <html lang="en">
   <head>
     <meta charset="utf-8">
