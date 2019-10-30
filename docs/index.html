@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>WGANSing: A Multi-Voice Singing Voice Synthesizer Based on the Wasserstein-GAN</title>
+        <title>NeuroDrum: Neural Percussive Synthesis Parameterised by High-Level Timbral Features</title>
         <!-- <link rel="stylesheet" type="text/css" href="../../css/blog-web.css" media="all"> -->
         <!-- <head> -->
     <link type="text/css" rel="stylesheet" href="css/style.css" />
@@ -21,67 +21,52 @@
     <center>
     <div id="blog-wrapper">
       <div id="blog-content">
-          <h2>Audio Examples of paper: WGANSing: A Multi-Voice Singing Voice Synthesizer Based on the Wasserstein-GAN</h2>
-          <h3>Pritish Chandna, Merlijn Blaauw, Jordi Bonada, Emilia Gómez</h3>
+          <h2>Audio Examples of paper: Neural Percussive Synthesis Parameterised by High-Level Timbral Features</h2>
+          <h3>Antonio Ramires, Pritish Chandna, Xavier Favory, Emilia Gómez, Xavier Serra</h3>
           <h3>Music Technology Group, Universitat Pompeu Fabra, Barcelona</h3>
     </center>
 
 
 
-  <h4>Examples From NUS-48E [1] Validation Set (The singers are non-native English Speakers)</h4>
-  <p> These are examples from the NUS-48E [1] dataset, on which the system was trained and evaluated</p>
+  <h4>Examples From Kicks dataset</h4>
+<!--   <p> These are examples from the NUS-48E [1] dataset, on which the system was trained and evaluated</p> -->
 
 
   <table>
 
   <tr>
     <td width="165px" style="padding-bottom: 40px;"></td>
-    <td width="150px"><b>Original Vocals, Re-synthesized using WORLD vocoder</b></td>
-    <td width="150px"><b>Vocals Synthesized Using WGANSing Model With L1 Loss</b></td>
-    <td width="150px"><b>Vocals Synthesized Using NPSS [2,3] Model</b></td>
-    <td width="150px"><b>Vocals Synthesized Using WGANSing Model Without L1 Loss</b></td>
-    <td width="150px"><b>Vocals Synthesized Using WGANSing Model With L1 Loss, With Voice Change</b></td>
-    <td width="150px"><b>Vocals Synthesized Using WGANSing Model With L1 Loss, With Voice and Gender Change</b></td>
-
+    <td width="150px"><b>Ground Truth Sound</b></td>
+    <td width="150px"><b>Sound synthesized with WAVE model</b></td>
+    <td width="150px"><b>Sound synthesized with FULL model</b></td>
+    <td width="150px"><b>Sound synthesized with HIGH model</b></td>
     
 
   </tr>
   <tr>
-    <td><b>Male Singing Voice</b></td>
+    <td><b>Example 1</b></td>
     <td>
   <audio controls preload="none" >
-  <source src="audio/ori_male.mp3" type="audio/mpeg">
+  <source src="demo_kicks/gt_0_11.wav" type="audio/wav">
   Your browser does not support the audio element.
   </audio>
     </td>
 
     <td>
   <audio controls preload="none">
-  <source src="audio/g_l1_male.mp3" type="audio/mp3">
+  <source src="demo_kicks/op_WAVE_0_11.wav" type="audio/wav">
   Your browser does not support the audio element.
   </audio>
     </td>
     <td>
   <audio controls preload="none">
-  <source src="audio/npss_male.mp3" type="audio/mp3">
+  <source src="demo_kicks/op_FULL_0_11.wav" type="audio/wav">
   Your browser does not support the audio element.
   </audio>
     </td>
   <td>
   <audio controls preload="none">
-  <source src="audio/g_solo_male.mp3" type="audio/mp3">
-  Your browser does not support the audio element.
-  </audio>
-    </td>
-  <td>
-  <audio controls preload="none">
-  <source src="audio/g_vc_male.mp3" type="audio/mp3">
-  Your browser does not support the audio element.
-  </audio>
-    </td>
-    <td>
-  <audio controls preload="none">
-  <source src="audio/g_vc_m_f.mp3" type="audio/mp3">
+  <source src="demo_kicks/op_HIGH_0_11.wav" type="audio/wav">
   Your browser does not support the audio element.
   </audio>
     </td>
@@ -93,106 +78,170 @@
 
   <tr>
     <td width="165px" style="padding-bottom: 40px;"></td>
-    <td width="150px"><b>Original Vocals, Re-synthesized using WORLD vocoder</b></td>
-    <td width="150px"><b>Vocals Synthesized Using WGANSing Model With L1 Loss</b></td>
-    <td width="150px"><b>Vocals Synthesized Using NPSS [2,3] Model</b></td>
-    <td width="150px"><b>Vocals Synthesized Using WGANSing Model Without L1 Loss</b></td>
-    <td width="150px"><b>Vocals Synthesized Using WGANSing Model With L1 Loss, With Voice Change</b></td>
-    <td width="150px"><b>Vocals Synthesized Using WGANSing Model With L1 Loss, With Voice and Gender Change</b></td>
+    <td width="150px"><b>Ground Truth Sound</b></td>
+    <td width="150px"><b>Sound synthesized with WAVE model</b></td>
+    <td width="150px"><b>Sound synthesized with FULL model</b></td>
+    <td width="150px"><b>Sound synthesized with HIGH model</b></td>
     
 
   </tr>
   <tr>
-    <td><b>Female Singing Voice</b></td>
+    <td><b>Example 2</b></td>
     <td>
   <audio controls preload="none" >
-  <source src="audio/ori_female.mp3" type="audio/mpeg">
+  <source src="demo_kicks/gt_0_15.wav" type="audio/wav">
   Your browser does not support the audio element.
   </audio>
     </td>
 
     <td>
   <audio controls preload="none">
-  <source src="audio/g_l1_female.mp3" type="audio/mp3">
+  <source src="demo_kicks/op_WAVE_0_15.wav" type="audio/wav">
   Your browser does not support the audio element.
   </audio>
     </td>
     <td>
   <audio controls preload="none">
-  <source src="audio/npss_female.mp3" type="audio/mp3">
+  <source src="demo_kicks/op_FULL_0_15.wav" type="audio/wav">
   Your browser does not support the audio element.
   </audio>
     </td>
   <td>
   <audio controls preload="none">
-  <source src="audio/g_solo_female.mp3" type="audio/mp3">
-  Your browser does not support the audio element.
-  </audio>
-    </td>
-  <td>
-  <audio controls preload="none">
-  <source src="audio/g_vc_female.mp3" type="audio/mp3">
-  Your browser does not support the audio element.
-  </audio>
-    </td>
-   <td>
-  <audio controls preload="none">
-  <source src="audio/g_vc_f_m.mp3" type="audio/mp3">
+  <source src="demo_kicks/op_HIGH_0_15.wav" type="audio/wav">
   Your browser does not support the audio element.
   </audio>
     </td>
   </tr>
 
 </table>
- <!--  <table>
 
-  <tr>
+  <table>
 
-    <td width="150px">   
-
-      <figure>
-
-      <div id="container" align="left">
-   <img src="images/SDR.png" alt="SDR" width="470" height="300"/> 
-   <figcaption>
-    The  SDR  metric  from  the  BSS  Eval  toolkit  for  the three systems to be compared.
-   </figcaption>
-    </figure>
- </td>
-    <td width="150px"> 
-  
-   <img src="images/SAR.png" alt="SDR"  width="470" height="300" /> 
-   <figcaption>
-    The  SAR  metric  from  the  BSS  Eval  toolkit  for  the three systems to be compared.
-   </figcaption>
-     </div>         
-  </figure>
-  </tr>
   <tr>
     <td width="165px" style="padding-bottom: 40px;"></td>
-    <td width="150px">   
+    <td width="150px"><b>Ground Truth Sound</b></td>
+    <td width="150px"><b>Sound synthesized with WAVE model</b></td>
+    <td width="150px"><b>Sound synthesized with FULL model</b></td>
+    <td width="150px"><b>Sound synthesized with HIGH model</b></td>
+    
 
-      <figure>
+  </tr>
+  <tr>
+    <td><b>Example 3</b></td>
+    <td>
+  <audio controls preload="none" >
+  <source src="demo_kicks/gt_1_1.wav" type="audio/wav">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
 
-      <div id="container" align="left">
-   <img src="images/SIR.png" alt="SDR" width="470" height="300"/> 
-   <figcaption>
-    The SIR metric from the BSS Eval toolkit for the three systems to be compared.
-   </figcaption>
-    </figure>
- </td>
-    <td width="150px"> 
-  
-   <img src="images/MCD.png" alt="SDR"  width="470" height="300" /> 
-   <figcaption>
-    The  Mel Cepstral Distrotion (MCD), in dB, for the three systems compared .
-   </figcaption>
-     </div>         
-  </figure>
+    <td>
+  <audio controls preload="none">
+  <source src="demo_kicks/op_WAVE_1_1.wav" type="audio/wav">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+    <td>
+  <audio controls preload="none">
+  <source src="demo_kicks/op_FULL_1_1.wav" type="audio/wav">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+  <td>
+  <audio controls preload="none">
+  <source src="demo_kicks/op_HIGH_1_1.wav" type="audio/wav">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
   </tr>
 
-</table> -->
+</table>
 
+  <table>
+
+  <tr>
+    <td width="165px" style="padding-bottom: 40px;"></td>
+    <td width="150px"><b>Ground Truth Sound</b></td>
+    <td width="150px"><b>Sound synthesized with WAVE model</b></td>
+    <td width="150px"><b>Sound synthesized with FULL model</b></td>
+    <td width="150px"><b>Sound synthesized with HIGH model</b></td>
+    
+
+  </tr>
+  <tr>
+    <td><b>Example 4</b></td>
+    <td>
+  <audio controls preload="none" >
+  <source src="demo_kicks/gt_1_5.wav" type="audio/wav">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+
+    <td>
+  <audio controls preload="none">
+  <source src="demo_kicks/op_WAVE_1_5.wav" type="audio/wav">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+    <td>
+  <audio controls preload="none">
+  <source src="demo_kicks/op_FULL_1_5.wav" type="audio/wav">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+  <td>
+  <audio controls preload="none">
+  <source src="demo_kicks/op_HIGH_1_5.wav" type="audio/wav">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+  </tr>
+
+</table>
+
+
+  <table>
+
+  <tr>
+    <td width="165px" style="padding-bottom: 40px;"></td>
+    <td width="150px"><b>Ground Truth Sound</b></td>
+    <td width="150px"><b>Sound synthesized with WAVE model</b></td>
+    <td width="150px"><b>Sound synthesized with FULL model</b></td>
+    <td width="150px"><b>Sound synthesized with HIGH model</b></td>
+    
+
+  </tr>
+  <tr>
+    <td><b>Example 5</b></td>
+    <td>
+  <audio controls preload="none" >
+  <source src="demo_kicks/gt_1_11.wav" type="audio/wav">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+
+    <td>
+  <audio controls preload="none">
+  <source src="demo_kicks/op_WAVE_1_11.wav" type="audio/wav">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+    <td>
+  <audio controls preload="none">
+  <source src="demo_kicks/op_FULL_1_11.wav" type="audio/wav">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+  <td>
+  <audio controls preload="none">
+  <source src="demo_kicks/op_HIGH_1_11.wav" type="audio/wav">
+  Your browser does not support the audio element.
+  </audio>
+    </td>
+  </tr>
+
+</table>
 
 
 
