@@ -10,6 +10,8 @@ This repository contains the source code for NeuroDrum, a parametric percussion 
 
 #### Selected sound examples available at the [website](https://pc2752.github.io/percussive_synth/).
 
+#### A preprint is available at https://arxiv.org/abs/1911.11853
+
 <h3>Installation</h3>
 To install NeuroDrum and its dependencies, clone the repository and use: 
 <pre><code>pip install -r percussive_synth/requirements.txt </code></pre>
