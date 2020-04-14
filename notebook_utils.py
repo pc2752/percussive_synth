@@ -64,7 +64,7 @@ DEFAULT_FS_VALUES = [0.7279065, 0.7787189, 0.4476448, 0.7108625, 0.39033762, 0.4
 def generate_envelope(attack, release, sr=16000):
     envelope = []
     if attack + release <= 1 :
-        envelope = np.concatenate((np.linspace(0, 1, attack*sr), np.linspace(1, 0, release*sr)))
+        envelope = np.concatenate((np.linspace(0, 1, int(attack*sr)), np.linspace(1, 0, int(release*sr))))
         result = np.zeros(16000)
         result[:len(envelope)] =  envelope
     return result
